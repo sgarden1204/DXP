@@ -1,1 +1,5 @@
-﻿  DirectxFinal_2010.vcxproj -> C:\Users\user\Desktop\DXP\DirectxFinal\Debug\DirectxFinal.exe
+﻿  DirectxFinal.cpp
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(85): warning C4100: 'i': 참조되지 않은 정식 매개 변수입니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(201): warning C4100: 'lpCmdLine': 참조되지 않은 정식 매개 변수입니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(200): warning C4100: 'hPrevInstance': 참조되지 않은 정식 매개 변수입니다.
+  DirectxFinal_2010.vcxproj -> C:\Users\user\Desktop\DXP\DirectxFinal\Debug\DirectxFinal.exe

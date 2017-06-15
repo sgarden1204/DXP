@@ -23,8 +23,10 @@ LPD3DXSPRITE d3dspt;    // the pointer to our Direct3D Sprite interface
 
 						//텍스쳐를 선언
 LPDIRECT3DTEXTURE9 sprite_background;
+LPDIRECT3DTEXTURE9 sprite_base;
 
 
+//깃허브버그있다?
 // sprite declarations
 //LPDIRECT3DTEXTURE9 DisplayTexture;    // the pointer to the texture
 
@@ -319,9 +321,24 @@ void initD3D(HWND hWnd)
 		NULL,    // not using 256 colors
 		&sprite_background);    // load to sprite
 
+	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
+		L"Base.png",    // the file name
+		D3DX_DEFAULT_NONPOW2,    // default width
+		D3DX_DEFAULT_NONPOW2,    // default height
+		D3DX_DEFAULT,    // no mip mapping
+		NULL,    // regular usage
+		D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
+		D3DPOOL_MANAGED,    // typical memory handling
+		D3DX_DEFAULT,    // no filtering
+		D3DX_DEFAULT,    // no mip filtering
+		D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
+		NULL,    // no image info struct
+		NULL,    // not using 256 colors
+		&sprite_base);    // load to sprite
+
 	return;
 }
-
+ 
 void init_game(void)
 {
 	//
@@ -358,11 +375,19 @@ void render_frame(void)
 
 	d3dspt->Begin(D3DXSPRITE_ALPHABLEND);    // begin sprite drawing with transparency
 	///////////////////////////////////
+	//백그라운드
 	RECT background;
 	SetRect(&background, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	D3DXVECTOR3 background_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
 	D3DXVECTOR3 background_position(0, 0, 0.0f);    // position at 50, 50 with no depth
 	d3dspt->Draw(sprite_background, &background, &background_centor, &background_position, D3DCOLOR_ARGB(255, 255, 255, 255));
+
+	//베이스기지
+	RECT base;
+	SetRect(&base, 0, 0, 150, 300);
+	D3DXVECTOR3 base_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
+	D3DXVECTOR3 base_position(650, 200, 0.0f);    // position at 50, 50 with no depth
+	d3dspt->Draw(sprite_base, &background, &base_centor, &base_position, D3DCOLOR_ARGB(255, 255, 255, 255));
 	///////////////////////////////
 	d3dspt->End();    // end sprite drawing
 
@@ -381,6 +406,7 @@ void cleanD3D(void)
 	d3d->Release();
 
 	sprite_background->Release();
+	sprite_base->Release();
 
 	return;
 }
