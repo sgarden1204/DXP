@@ -1,6 +1,0 @@
-﻿  DirectxFinal.cpp
-c:\users\user\documents\visual studio projects\directxsamples\directxfinal\directxfinal.cpp(83): warning C4100: 'i': 참조되지 않은 정식 매개 변수입니다.
-c:\users\user\documents\visual studio projects\directxsamples\directxfinal\directxfinal.cpp(199): warning C4100: 'lpCmdLine': 참조되지 않은 정식 매개 변수입니다.
-c:\users\user\documents\visual studio projects\directxsamples\directxfinal\directxfinal.cpp(198): warning C4100: 'hPrevInstance': 참조되지 않은 정식 매개 변수입니다.
-DirectxFinal.obj : warning LNK4075: '/EDITANDCONTINUE'이(가) '/SAFESEH' 사양으로 인해 무시됩니다.
-  DirectxFinal_2010.vcxproj -> C:\Users\user\Documents\Visual Studio Projects\DirectXSamples\DirectxFinal\Debug\DirectxFinal.exe
