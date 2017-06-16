@@ -375,11 +375,13 @@
     <None Include="DXUT\Optional\directx.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CommandCenter.cpp" />
     <ClCompile Include="DirectxFinal.cpp" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CommandCenter.h" />
     <CLInclude Include="resource.h" />
     <ResourceCompile Include="DirectxFinal.rc" />
   </ItemGroup>
