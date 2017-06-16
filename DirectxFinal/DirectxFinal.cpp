@@ -24,6 +24,9 @@ LPD3DXSPRITE d3dspt;    // the pointer to our Direct3D Sprite interface
 						//스프라이트 선언
 
 						//텍스쳐를 선언
+LPDIRECT3DTEXTURE9 sprite_start_menu;
+LPDIRECT3DTEXTURE9 sprite_end_menu;
+
 LPDIRECT3DTEXTURE9 sprite_background;
 LPDIRECT3DTEXTURE9 sprite_base;
 LPDIRECT3DTEXTURE9 sprite_base_attack;
@@ -47,6 +50,14 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 
 using namespace std;
+//////////////////////////////////////////////////
+
+enum class GameState : int 
+{
+	start_menu, end_menu, ingame
+};
+
+GameState gamestate = GameState::start_menu;
 
 CommandCenter CC;
 
@@ -178,6 +189,39 @@ void initD3D(HWND hWnd)
 	D3DXCreateSprite(d3ddev, &d3dspt);    // create the Direct3D Sprite object
 										  //스프라이트 생성
 										  //이 이후로 텍스쳐를 생성한다
+
+	//게임 시작 메뉴
+	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
+		L"GameStart.png",    // the file name
+		D3DX_DEFAULT_NONPOW2,    // default width
+		D3DX_DEFAULT_NONPOW2,    // default height
+		D3DX_DEFAULT,    // no mip mapping
+		NULL,    // regular usage
+		D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
+		D3DPOOL_MANAGED,    // typical memory handling
+		D3DX_DEFAULT,    // no filtering
+		D3DX_DEFAULT,    // no mip filtering
+		D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
+		NULL,    // no image info struct
+		NULL,    // not using 256 colors
+		&sprite_start_menu);    // load to sprite
+
+	//게임 끝내기 메뉴
+	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
+		L"GameEnd.png",    // the file name
+		D3DX_DEFAULT_NONPOW2,    // default width
+		D3DX_DEFAULT_NONPOW2,    // default height
+		D3DX_DEFAULT,    // no mip mapping
+		NULL,    // regular usage
+		D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
+		D3DPOOL_MANAGED,    // typical memory handling
+		D3DX_DEFAULT,    // no filtering
+		D3DX_DEFAULT,    // no mip filtering
+		D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
+		NULL,    // no image info struct
+		NULL,    // not using 256 colors
+		&sprite_end_menu);    // load to sprite
+
 	// 백그라운드
 	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
 		L"BackGround.png",    // the file name
@@ -226,6 +270,7 @@ void initD3D(HWND hWnd)
 		NULL,    // not using 256 colors
 		&sprite_base_attack);    // load to sprite
 
+	//베이스기지 총알
 	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
 		L"Base_Shoot.png",    // the file name
 		D3DX_DEFAULT_NONPOW2,    // default width
@@ -253,29 +298,65 @@ void do_game_logic(void)
 {
 
 	//////////////////////////
+		
+	switch (gamestate)
+	{
+	case GameState::start_menu:
 
-		//주인공 처리 
-		if (KEY_DOWN(VK_UP))
-			//hero.move(MOVE_UP);
-
-		if (KEY_DOWN(VK_DOWN))
-			//hero.move(MOVE_DOWN);
-
-		if (KEY_DOWN(VK_LEFT))
+		if (KEY_DOWN(VK_RETURN)) // 스타트에서 엔터키 입력시 인게임으로 이동
 		{
-			//hero.move(MOVE_LEFT);
+			gamestate = GameState::ingame;
+			break;
 		}
-		if (KEY_DOWN(VK_RIGHT))
+		else if (KEY_DOWN(VK_LEFT) ||
+			KEY_DOWN(VK_RIGHT) ||
+			KEY_DOWN(VK_UP) ||
+			KEY_DOWN(VK_DOWN))
 		{
-			//hero.move(MOVE_RIGHT);
+			gamestate = GameState::end_menu;
 		}
-		if (KEY_DOWN(VK_SPACE))
+
+		break;
+	case GameState::end_menu:
+
+		 if (KEY_DOWN(VK_RETURN)) // 엔드에서 엔터키 입력시 종료
 		{
-			if (CC.Fire == true)
+			exit(0);
+			break;
+		}
+		 else if (KEY_DOWN(VK_LEFT) ||
+			 KEY_DOWN(VK_RIGHT) ||
+			 KEY_DOWN(VK_UP) ||
+			 KEY_DOWN(VK_DOWN))
+		{
+			gamestate = GameState::start_menu;
+		}
+		break;
+	case GameState::ingame:
+
+			if (KEY_DOWN(VK_UP))
+				//hero.move(MOVE_UP);
+
+			if (KEY_DOWN(VK_DOWN))
+				//hero.move(MOVE_DOWN);
+
+			if (KEY_DOWN(VK_LEFT))
 			{
-				CC.Fire = false;
+				//hero.move(MOVE_LEFT);
 			}
-		}
+			if (KEY_DOWN(VK_RIGHT))
+			{
+				//hero.move(MOVE_RIGHT);
+			}
+			if (KEY_DOWN(VK_SPACE))
+			{
+				if (CC.Fire == true)
+				{
+					CC.Fire = false;
+				}
+			}
+		break;
+	}
 }
 // this is the function used to render a single frame
 void render_frame(void)
@@ -288,51 +369,83 @@ void render_frame(void)
 	d3dspt->Begin(D3DXSPRITE_ALPHABLEND);    // begin sprite drawing with transparency
 	///////////////////////////////////
 	//백그라운드
-	RECT background;
-	SetRect(&background, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-	D3DXVECTOR3 background_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-	D3DXVECTOR3 background_position(0, 0, 0.0f);    // position at 50, 50 with no depth
-	d3dspt->Draw(sprite_background, &background, &background_centor, &background_position, D3DCOLOR_ARGB(255, 255, 255, 255));
 
-	//베이스기지
-
-	if (CC.Fire == false)
+	switch (gamestate)
 	{
+	case GameState::start_menu://시작메뉴
+	{
+		RECT start_menu;
+		SetRect(&start_menu, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		D3DXVECTOR3 start_menu_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
+		D3DXVECTOR3 start_menu_position(0, 0, 0.0f);    // position at 50, 50 with no depth
+		d3dspt->Draw(sprite_start_menu, &start_menu, &start_menu_centor, &start_menu_position, D3DCOLOR_ARGB(255, 255, 255, 255));
 
-		//베이스 기지 공격
-		RECT base;
-		SetRect(&base, 0, 0, 150, 300);
-		D3DXVECTOR3 base_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-		D3DXVECTOR3 base_position(CC.Position_x,CC.Position_y, 0.0f);    // position at 50, 50 with no depth
-		d3dspt->Draw(sprite_base_attack, &base, &base_centor, &base_position, D3DCOLOR_ARGB(255, 255, 255, 255));
+		break;
+	}
+	case GameState::end_menu: //끝내기
+	{
+		RECT end_menu;
+		SetRect(&end_menu, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		D3DXVECTOR3 end_menu_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
+		D3DXVECTOR3 end_menu_position(0, 0, 0.0f);    // position at 50, 50 with no depth
+		d3dspt->Draw(sprite_end_menu, &end_menu, &end_menu_centor, &end_menu_position, D3DCOLOR_ARGB(255, 255, 255, 255));
+		break;
+	}
+	case GameState::ingame: //인게임 
+	{
+		RECT background;
+		SetRect(&background, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		D3DXVECTOR3 background_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
+		D3DXVECTOR3 background_position(0, 0, 0.0f);    // position at 50, 50 with no depth
+		d3dspt->Draw(sprite_background, &background, &background_centor, &background_position, D3DCOLOR_ARGB(255, 255, 255, 255));
 
-		//베이스 기지 레이저 발사 공격
+		//베이스기지
 
-		RECT raser;
-		SetRect(&raser, 70 * (CC.Fire_Frame - 1 /10), 0, 70 * (CC.Fire_Frame/10), 120);
-		D3DXVECTOR3 raser_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-		D3DXVECTOR3 raser_position(CC.Position_x -  (85 * CC.Fire_Frame)/ 10, CC.Position_y + 175, 0.0f);    // position at 50, 50 with no depth
-		d3dspt->Draw(sprite_base_shoot, &raser, &raser_centor, &raser_position, D3DCOLOR_ARGB(255, 255, 255, 255));
-
-		CC.Fire_Frame++;
-
-		if (CC.Fire_Frame == 20)
+		if (CC.Fire == false)
 		{
-			CC.Fire_Frame = 0;
-			CC.Fire = true;
+
+			//베이스 기지 공격
+			RECT base;
+			SetRect(&base, 0, 0, 150, 300);
+			D3DXVECTOR3 base_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
+			D3DXVECTOR3 base_position(CC.Position_x, CC.Position_y, 0.0f);    // position at 50, 50 with no depth
+			d3dspt->Draw(sprite_base_attack, &base, &base_centor, &base_position, D3DCOLOR_ARGB(255, 255, 255, 255));
+
+			//베이스 기지 레이저 발사 공격
+
+			RECT raser;
+			SetRect(&raser, 70 * (CC.Fire_Frame - 1 / 10), 0, 70 * (CC.Fire_Frame / 10), 120);
+			D3DXVECTOR3 raser_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
+			D3DXVECTOR3 raser_position(CC.Position_x - (85 * CC.Fire_Frame) / 10, CC.Position_y + 175, 0.0f);    // position at 50, 50 with no depth
+			d3dspt->Draw(sprite_base_shoot, &raser, &raser_centor, &raser_position, D3DCOLOR_ARGB(255, 255, 255, 255));
+
+			CC.Fire_Frame++;
+
+			if (CC.Fire_Frame == 20)
+			{
+				CC.Fire_Frame = 0;
+				CC.Fire = true;
+			}
+
 		}
 
+		else // base_attack false;
+		{
+			//베이스 기지 일반
+			RECT base;
+			SetRect(&base, 0, 0, 150, 300);
+			D3DXVECTOR3 base_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
+			D3DXVECTOR3 base_position(CC.Position_x, CC.Position_y, 0.0f);    // position at 50, 50 with no depth
+			d3dspt->Draw(sprite_base, &background, &base_centor, &base_position, D3DCOLOR_ARGB(255, 255, 255, 255));
+		}
+
+		break;
 	}
-	 
-	else // base_attack false;
-	{
-		//베이스 기지 일반
-		RECT base;
-		SetRect(&base, 0, 0, 150, 300);
-		D3DXVECTOR3 base_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-		D3DXVECTOR3 base_position(CC.Position_x, CC.Position_y, 0.0f);    // position at 50, 50 with no depth
-		d3dspt->Draw(sprite_base, &background, &base_centor, &base_position, D3DCOLOR_ARGB(255, 255, 255, 255));
+
 	}
+
+
+	
 	///////////////////////////////
 	d3dspt->End();    // end sprite drawing
 
@@ -349,6 +462,9 @@ void cleanD3D(void)
 {
 	d3ddev->Release();
 	d3d->Release();
+
+	sprite_start_menu->Release();
+	sprite_end_menu->Release();
 
 	sprite_background->Release();
 
