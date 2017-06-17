@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include"CommandCenter.h"
+#include"Sound.h"
 
 // define the screen resolution and keyboard macros
 #define SCREEN_WIDTH  800
@@ -21,6 +22,7 @@
 LPDIRECT3D9 d3d;    // the pointer to our Direct3D interface
 LPDIRECT3DDEVICE9 d3ddev;    // the pointer to the device class
 LPD3DXSPRITE d3dspt;    // the pointer to our Direct3D Sprite interface
+LPDIRECTSOUNDBUFFER g_lpDSBG;
 						//스프라이트 선언
 
 						//텍스쳐를 선언
@@ -28,14 +30,11 @@ LPDIRECT3DTEXTURE9 sprite_start_menu;
 LPDIRECT3DTEXTURE9 sprite_end_menu;
 
 LPDIRECT3DTEXTURE9 sprite_background;
+//LPDIRECT3DTEXTURE9 sprite_ui;
+
 LPDIRECT3DTEXTURE9 sprite_base;
 LPDIRECT3DTEXTURE9 sprite_base_attack;
 LPDIRECT3DTEXTURE9 sprite_base_shoot;
-
-// sprite declarations
-//LPDIRECT3DTEXTURE9 DisplayTexture;    // the pointer to the texture
-
-//bool base_attack = false;
 
 void initD3D(HWND hWnd);    // sets up and initializes Direct3D
 void render_frame(void);    // renders a single frame
@@ -57,9 +56,16 @@ enum class GameState : int
 	start_menu, end_menu, ingame
 };
 
+enum class GameStage : int
+{
+	stage1, stage2, stage3, stage4, stage5, stage6
+};
+
 GameState gamestate = GameState::start_menu;
+GameStage gamestage = GameStage::stage1;
 
 CommandCenter CC;
+Sound sound;
 
 
 //기본 클래스 
@@ -178,6 +184,9 @@ void initD3D(HWND hWnd)
 	d3dpp.BackBufferHeight = SCREEN_HEIGHT;
 	//전체화면-> 창모드 설정
 
+	//사운드 초기화
+
+
 	// create a device class using this information and the info from the d3dpp stuct
 	d3d->CreateDevice(D3DADAPTER_DEFAULT,
 		D3DDEVTYPE_HAL,
@@ -186,6 +195,8 @@ void initD3D(HWND hWnd)
 		&d3dpp,
 		&d3ddev);
 
+	sound.CreateDirectSound(hWnd);
+	//사운드 크리에이트
 	D3DXCreateSprite(d3ddev, &d3dspt);    // create the Direct3D Sprite object
 										  //스프라이트 생성
 										  //이 이후로 텍스쳐를 생성한다
@@ -223,6 +234,22 @@ void initD3D(HWND hWnd)
 		&sprite_end_menu);    // load to sprite
 
 	// 백그라운드
+	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
+		L"BackGround.png",    // the file name
+		D3DX_DEFAULT_NONPOW2,    // default width
+		D3DX_DEFAULT_NONPOW2,    // default height
+		D3DX_DEFAULT,    // no mip mapping
+		NULL,    // regular usage
+		D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
+		D3DPOOL_MANAGED,    // typical memory handling
+		D3DX_DEFAULT,    // no filtering
+		D3DX_DEFAULT,    // no mip filtering
+		D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
+		NULL,    // no image info struct
+		NULL,    // not using 256 colors
+		&sprite_background);    // load to sprite
+
+		// UI 버튼
 	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
 		L"BackGround.png",    // the file name
 		D3DX_DEFAULT_NONPOW2,    // default width
@@ -294,6 +321,11 @@ void init_game(void)
 
 }
 
+void sound_run()
+{
+	//
+}
+
 void do_game_logic(void)
 {
 
@@ -303,15 +335,12 @@ void do_game_logic(void)
 	{
 	case GameState::start_menu:
 
-		if (KEY_DOWN(VK_RETURN)) // 스타트에서 엔터키 입력시 인게임으로 이동
+		if (KEY_DOWN(VK_RETURN) || KEY_DOWN(VK_SPACE)) // 스타트에서 엔터키 입력시 인게임으로 이동
 		{
 			gamestate = GameState::ingame;
 			break;
 		}
-		else if (KEY_DOWN(VK_LEFT) ||
-			KEY_DOWN(VK_RIGHT) ||
-			KEY_DOWN(VK_UP) ||
-			KEY_DOWN(VK_DOWN))
+		else if (KEY_DOWN(VK_DOWN) || KEY_DOWN(VK_LEFT))
 		{
 			gamestate = GameState::end_menu;
 		}
@@ -319,19 +348,17 @@ void do_game_logic(void)
 		break;
 	case GameState::end_menu:
 
-		 if (KEY_DOWN(VK_RETURN)) // 엔드에서 엔터키 입력시 종료
+		 if (KEY_DOWN(VK_RETURN) || KEY_DOWN(VK_SPACE)) // 엔드에서 엔터키 입력시 종료
 		{
 			exit(0);
 			break;
 		}
-		 else if (KEY_DOWN(VK_LEFT) ||
-			 KEY_DOWN(VK_RIGHT) ||
-			 KEY_DOWN(VK_UP) ||
-			 KEY_DOWN(VK_DOWN))
+		 else if (KEY_DOWN(VK_UP) || KEY_DOWN(VK_RIGHT))
 		{
 			gamestate = GameState::start_menu;
 		}
 		break;
+
 	case GameState::ingame:
 
 			if (KEY_DOWN(VK_UP))
@@ -463,16 +490,21 @@ void cleanD3D(void)
 	d3ddev->Release();
 	d3d->Release();
 
+	//g_lpDSBG->Release();
+
 	sprite_start_menu->Release();
 	sprite_end_menu->Release();
 
 	sprite_background->Release();
+	//sprite_ui->Release();
 
 	sprite_base->Release();
 	sprite_base_attack->Release();
 	sprite_base_shoot->Release();
 
 	CC.~CommandCenter();
+
+	//sound.DeleteDirectSound();
 
 	return;
 }
