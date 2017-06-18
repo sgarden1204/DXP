@@ -1,4 +1,8 @@
 ﻿  DirectxFinal.cpp
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(91): warning C4100: 'lpCmdLine': 참조되지 않은 정식 매개 변수입니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(90): warning C4100: 'hPrevInstance': 참조되지 않은 정식 매개 변수입니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(97): warning C4244: '인수': 'int'에서 'FLOAT'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(124): warning C4100: 'lpCmdLine': 참조되지 않은 정식 매개 변수입니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(123): warning C4100: 'hPrevInstance': 참조되지 않은 정식 매개 변수입니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(377): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(380): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(395): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   DirectxFinal_2010.vcxproj -> C:\Users\user\Desktop\DXP\DirectxFinal\Debug\DirectxFinal.exe

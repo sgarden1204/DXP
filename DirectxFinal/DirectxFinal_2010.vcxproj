@@ -377,12 +377,14 @@
   <ItemGroup>
     <ClCompile Include="CommandCenter.cpp" />
     <ClCompile Include="DirectxFinal.cpp" />
+    <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="Sound.cpp" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CommandCenter.h" />
+    <ClInclude Include="GameManager.h" />
     <CLInclude Include="resource.h" />
     <ClInclude Include="Sound.h" />
     <ResourceCompile Include="DirectxFinal.rc" />

@@ -18,6 +18,7 @@
     <ClCompile Include="DirectxFinal.cpp" />
     <ClCompile Include="CommandCenter.cpp" />
     <ClCompile Include="Sound.cpp" />
+    <ClCompile Include="GameManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CLInclude Include="resource.h">
@@ -28,6 +29,7 @@
     </ResourceCompile>
     <ClInclude Include="CommandCenter.h" />
     <ClInclude Include="Sound.h" />
+    <ClInclude Include="GameManager.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

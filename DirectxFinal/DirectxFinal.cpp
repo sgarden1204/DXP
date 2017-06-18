@@ -7,6 +7,7 @@
 
 #include"CommandCenter.h"
 #include"Sound.h"
+#include"GameManager.h"
 
 // define the screen resolution and keyboard macros
 #define SCREEN_WIDTH  800
@@ -29,8 +30,9 @@ LPDIRECTSOUNDBUFFER g_lpDSBG;
 LPDIRECT3DTEXTURE9 sprite_start_menu;
 LPDIRECT3DTEXTURE9 sprite_end_menu;
 
+LPDIRECT3DTEXTURE9 sprite_story;
 LPDIRECT3DTEXTURE9 sprite_background;
-//LPDIRECT3DTEXTURE9 sprite_ui;
+LPDIRECT3DTEXTURE9 sprite_ui;
 
 LPDIRECT3DTEXTURE9 sprite_base;
 LPDIRECT3DTEXTURE9 sprite_base_attack;
@@ -42,6 +44,10 @@ void cleanD3D(void);		// closes Direct3D and releases memory
 
 void init_game(void);
 void do_game_logic(void);
+
+void Render_Draw(int x1, int y1, int x2, int y2, int pos_x, int pos_y, LPDIRECT3DTEXTURE9 name);
+void Create_Texture(LPCWSTR filename, LPDIRECT3DTEXTURE9  *sprite_name);
+
 bool sphere_collision_check(float x0, float y0, float size0, float x1, float y1, float size1);
 
 // the WindowProc function prototype
@@ -58,7 +64,7 @@ enum class GameState : int
 
 enum class GameStage : int
 {
-	stage1, stage2, stage3, stage4, stage5, stage6
+	stage1, stage2, stage3, stage4, stage5, stage6, stage7
 };
 
 GameState gamestate = GameState::start_menu;
@@ -66,8 +72,8 @@ GameStage gamestage = GameStage::stage1;
 
 CommandCenter CC;
 Sound sound;
-
-
+GameManager * GameManager::instance = nullptr;
+GameManager * gm = GameManager::get_Instance();
 //기본 클래스 
 class entity {
 
@@ -81,6 +87,33 @@ bool sphere_collision_check(float x0, float y0, float size0, float x1, float y1,
 	else
 		return false;
 
+}
+
+void Render_Draw(int x1,int y1,int x2, int y2,int pos_x,int pos_y,LPDIRECT3DTEXTURE9 name)
+{
+	RECT rect;
+	SetRect(&rect, x1, y1, x2, y2);
+	D3DXVECTOR3 rect_center(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
+	D3DXVECTOR3 rect_position(pos_x, pos_y, 0.0f);    // position at 50, 50 with no depth
+	d3dspt->Draw(name, &rect, &rect_center, &rect_position, D3DCOLOR_ARGB(255, 255, 255, 255));
+}
+
+void Create_Texture(LPCWSTR filename,LPDIRECT3DTEXTURE9 * sprite_name)
+{
+	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
+		filename,    // the file name
+		D3DX_DEFAULT_NONPOW2,    // default width
+		D3DX_DEFAULT_NONPOW2,    // default height
+		D3DX_DEFAULT,    // no mip mapping
+		NULL,    // regular usage
+		D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
+		D3DPOOL_MANAGED,    // typical memory handling
+		D3DX_DEFAULT,    // no filtering
+		D3DX_DEFAULT,    // no mip filtering
+		D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
+		NULL,    // no image info struct
+		NULL,    // not using 256 colors
+		sprite_name);    // load to sprite
 }
 
 //주인공 클래스 
@@ -197,128 +230,44 @@ void initD3D(HWND hWnd)
 
 	sound.CreateDirectSound(hWnd);
 	//사운드 크리에이트
-	D3DXCreateSprite(d3ddev, &d3dspt);    // create the Direct3D Sprite object
+
+	// create the Direct3D Sprite object
 										  //스프라이트 생성
 										  //이 이후로 텍스쳐를 생성한다
+	D3DXCreateSprite(d3ddev, &d3dspt);
 
 	//게임 시작 메뉴
-	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
-		L"GameStart.png",    // the file name
-		D3DX_DEFAULT_NONPOW2,    // default width
-		D3DX_DEFAULT_NONPOW2,    // default height
-		D3DX_DEFAULT,    // no mip mapping
-		NULL,    // regular usage
-		D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
-		D3DPOOL_MANAGED,    // typical memory handling
-		D3DX_DEFAULT,    // no filtering
-		D3DX_DEFAULT,    // no mip filtering
-		D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
-		NULL,    // no image info struct
-		NULL,    // not using 256 colors
-		&sprite_start_menu);    // load to sprite
+	Create_Texture(L"GameStart.png", &sprite_start_menu);
 
 	//게임 끝내기 메뉴
-	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
-		L"GameEnd.png",    // the file name
-		D3DX_DEFAULT_NONPOW2,    // default width
-		D3DX_DEFAULT_NONPOW2,    // default height
-		D3DX_DEFAULT,    // no mip mapping
-		NULL,    // regular usage
-		D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
-		D3DPOOL_MANAGED,    // typical memory handling
-		D3DX_DEFAULT,    // no filtering
-		D3DX_DEFAULT,    // no mip filtering
-		D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
-		NULL,    // no image info struct
-		NULL,    // not using 256 colors
-		&sprite_end_menu);    // load to sprite
+	Create_Texture(L"GameEnd.png", &sprite_end_menu);
+
+	//게임 스토리
+	Create_Texture(L"Story.png", &sprite_story);
 
 	// 백그라운드
-	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
-		L"BackGround.png",    // the file name
-		D3DX_DEFAULT_NONPOW2,    // default width
-		D3DX_DEFAULT_NONPOW2,    // default height
-		D3DX_DEFAULT,    // no mip mapping
-		NULL,    // regular usage
-		D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
-		D3DPOOL_MANAGED,    // typical memory handling
-		D3DX_DEFAULT,    // no filtering
-		D3DX_DEFAULT,    // no mip filtering
-		D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
-		NULL,    // no image info struct
-		NULL,    // not using 256 colors
-		&sprite_background);    // load to sprite
+	Create_Texture(L"BackGround.png", &sprite_background);
 
 		// UI 버튼
-	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
-		L"BackGround.png",    // the file name
-		D3DX_DEFAULT_NONPOW2,    // default width
-		D3DX_DEFAULT_NONPOW2,    // default height
-		D3DX_DEFAULT,    // no mip mapping
-		NULL,    // regular usage
-		D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
-		D3DPOOL_MANAGED,    // typical memory handling
-		D3DX_DEFAULT,    // no filtering
-		D3DX_DEFAULT,    // no mip filtering
-		D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
-		NULL,    // no image info struct
-		NULL,    // not using 256 colors
-		&sprite_background);    // load to sprite
+	Create_Texture(L"UI.png", &sprite_ui);
 
 	//베이스 기지
-	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
-		L"Base.png",    // the file name
-		D3DX_DEFAULT_NONPOW2,    // default width
-		D3DX_DEFAULT_NONPOW2,    // default height
-		D3DX_DEFAULT,    // no mip mapping
-		NULL,    // regular usage
-		D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
-		D3DPOOL_MANAGED,    // typical memory handling
-		D3DX_DEFAULT,    // no filtering
-		D3DX_DEFAULT,    // no mip filtering
-		D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
-		NULL,    // no image info struct
-		NULL,    // not using 256 colors
-		&sprite_base);    // load to sprite
+	Create_Texture(L"Base.png", &sprite_base);
 
 	//베이스 기지 공격
-	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
-		L"Base_Attack.png",    // the file name
-		D3DX_DEFAULT_NONPOW2,    // default width
-		D3DX_DEFAULT_NONPOW2,    // default height
-		D3DX_DEFAULT,    // no mip mapping
-		NULL,    // regular usage
-		D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
-		D3DPOOL_MANAGED,    // typical memory handling
-		D3DX_DEFAULT,    // no filtering
-		D3DX_DEFAULT,    // no mip filtering
-		D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
-		NULL,    // no image info struct
-		NULL,    // not using 256 colors
-		&sprite_base_attack);    // load to sprite
+	Create_Texture(L"Base_Attack.png", &sprite_base_attack);
 
 	//베이스기지 총알
-	D3DXCreateTextureFromFileEx(d3ddev,    // the device pointer
-		L"Base_Shoot.png",    // the file name
-		D3DX_DEFAULT_NONPOW2,    // default width
-		D3DX_DEFAULT_NONPOW2,    // default height
-		D3DX_DEFAULT,    // no mip mapping
-		NULL,    // regular usage
-		D3DFMT_A8R8G8B8,    // 32-bit pixels with alpha
-		D3DPOOL_MANAGED,    // typical memory handling
-		D3DX_DEFAULT,    // no filtering
-		D3DX_DEFAULT,    // no mip filtering
-		D3DCOLOR_XRGB(255, 0, 255),    // the hot-pink color key
-		NULL,    // no image info struct
-		NULL,    // not using 256 colors
-		&sprite_base_shoot);    // load to sprite
+	Create_Texture(L"Base_Shoot.png", &sprite_base_shoot);
+
+	
 
 	return;
 }
  
 void init_game(void)
 {
-
+	gm->Init();
 }
 
 void sound_run()
@@ -335,7 +284,7 @@ void do_game_logic(void)
 	{
 	case GameState::start_menu:
 
-		if (KEY_DOWN(VK_RETURN) || KEY_DOWN(VK_SPACE)) // 스타트에서 엔터키 입력시 인게임으로 이동
+		if (KEY_DOWN(VK_RETURN)) // 스타트에서 엔터키 입력시 인게임으로 이동
 		{
 			gamestate = GameState::ingame;
 			break;
@@ -401,50 +350,34 @@ void render_frame(void)
 	{
 	case GameState::start_menu://시작메뉴
 	{
-		RECT start_menu;
-		SetRect(&start_menu, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		D3DXVECTOR3 start_menu_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-		D3DXVECTOR3 start_menu_position(0, 0, 0.0f);    // position at 50, 50 with no depth
-		d3dspt->Draw(sprite_start_menu, &start_menu, &start_menu_centor, &start_menu_position, D3DCOLOR_ARGB(255, 255, 255, 255));
-
+		Render_Draw(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,sprite_start_menu);
 		break;
 	}
 	case GameState::end_menu: //끝내기
 	{
-		RECT end_menu;
-		SetRect(&end_menu, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		D3DXVECTOR3 end_menu_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-		D3DXVECTOR3 end_menu_position(0, 0, 0.0f);    // position at 50, 50 with no depth
-		d3dspt->Draw(sprite_end_menu, &end_menu, &end_menu_centor, &end_menu_position, D3DCOLOR_ARGB(255, 255, 255, 255));
+		Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_end_menu);
 		break;
 	}
 	case GameState::ingame: //인게임 
 	{
-		RECT background;
-		SetRect(&background, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-		D3DXVECTOR3 background_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-		D3DXVECTOR3 background_position(0, 0, 0.0f);    // position at 50, 50 with no depth
-		d3dspt->Draw(sprite_background, &background, &background_centor, &background_position, D3DCOLOR_ARGB(255, 255, 255, 255));
+		//스토리 설명
+		if (gm->wait_count < 80)
+		{
+			gm->wait_count++;
+			Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_story);
+			break;
+		}
 
+
+		Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_background);
 		//베이스기지
-
 		if (CC.Fire == false)
 		{
-
 			//베이스 기지 공격
-			RECT base;
-			SetRect(&base, 0, 0, 150, 300);
-			D3DXVECTOR3 base_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-			D3DXVECTOR3 base_position(CC.Position_x, CC.Position_y, 0.0f);    // position at 50, 50 with no depth
-			d3dspt->Draw(sprite_base_attack, &base, &base_centor, &base_position, D3DCOLOR_ARGB(255, 255, 255, 255));
+			Render_Draw(0, 0, 150, 300, CC.Position_x, CC.Position_y, sprite_base_attack);
 
 			//베이스 기지 레이저 발사 공격
-
-			RECT raser;
-			SetRect(&raser, 70 * (CC.Fire_Frame - 1 / 10), 0, 70 * (CC.Fire_Frame / 10), 120);
-			D3DXVECTOR3 raser_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-			D3DXVECTOR3 raser_position(CC.Position_x - (85 * CC.Fire_Frame) / 10, CC.Position_y + 175, 0.0f);    // position at 50, 50 with no depth
-			d3dspt->Draw(sprite_base_shoot, &raser, &raser_centor, &raser_position, D3DCOLOR_ARGB(255, 255, 255, 255));
+			Render_Draw(70 * (CC.Fire_Frame - 1 / 10), 0, 70 * (CC.Fire_Frame / 10), 120, CC.Position_x - (85 * CC.Fire_Frame) / 10, CC.Position_y + 175, sprite_base_shoot);
 
 			CC.Fire_Frame++;
 
@@ -459,12 +392,11 @@ void render_frame(void)
 		else // base_attack false;
 		{
 			//베이스 기지 일반
-			RECT base;
-			SetRect(&base, 0, 0, 150, 300);
-			D3DXVECTOR3 base_centor(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-			D3DXVECTOR3 base_position(CC.Position_x, CC.Position_y, 0.0f);    // position at 50, 50 with no depth
-			d3dspt->Draw(sprite_base, &background, &base_centor, &base_position, D3DCOLOR_ARGB(255, 255, 255, 255));
+			Render_Draw(0, 0, 150, 300, CC.Position_x, CC.Position_y, sprite_base);
 		}
+
+		//UI버튼
+		Render_Draw(0, gm->current_game_stage * 120, 800, 120, 0, 480, sprite_ui);
 
 		break;
 	}
@@ -495,8 +427,9 @@ void cleanD3D(void)
 	sprite_start_menu->Release();
 	sprite_end_menu->Release();
 
+	sprite_story->Release();
 	sprite_background->Release();
-	//sprite_ui->Release();
+	sprite_ui->Release();
 
 	sprite_base->Release();
 	sprite_base_attack->Release();
