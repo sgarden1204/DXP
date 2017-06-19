@@ -19,6 +19,7 @@
     <ClCompile Include="CommandCenter.cpp" />
     <ClCompile Include="Sound.cpp" />
     <ClCompile Include="GameManager.cpp" />
+    <ClCompile Include="Enemy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CLInclude Include="resource.h">
@@ -30,6 +31,7 @@
     <ClInclude Include="CommandCenter.h" />
     <ClInclude Include="Sound.h" />
     <ClInclude Include="GameManager.h" />
+    <ClInclude Include="Enemy.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

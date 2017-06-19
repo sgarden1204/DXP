@@ -15,6 +15,8 @@
 #define KEY_DOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
 #define KEY_UP(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 0 : 1)
 
+#define str_len 25
+
 // include the Direct3D Library file
 #pragma comment (lib, "d3d9.lib")
 #pragma comment (lib, "d3dx9.lib")
@@ -23,7 +25,12 @@
 LPDIRECT3D9 d3d;    // the pointer to our Direct3D interface
 LPDIRECT3DDEVICE9 d3ddev;    // the pointer to the device class
 LPD3DXSPRITE d3dspt;    // the pointer to our Direct3D Sprite interface
-LPDIRECTSOUNDBUFFER g_lpDSBG;
+LPDIRECTSOUNDBUFFER g_lpDSBG[2] = { NULL, };
+
+LPDIRECTSOUND g_lpDS = NULL;
+
+LPD3DXFONT font;
+
 						//스프라이트 선언
 
 						//텍스쳐를 선언
@@ -33,6 +40,7 @@ LPDIRECT3DTEXTURE9 sprite_end_menu;
 LPDIRECT3DTEXTURE9 sprite_story;
 LPDIRECT3DTEXTURE9 sprite_background;
 LPDIRECT3DTEXTURE9 sprite_ui;
+LPDIRECT3DTEXTURE9 sprite_ui_status;
 
 LPDIRECT3DTEXTURE9 sprite_base;
 LPDIRECT3DTEXTURE9 sprite_base_attack;
@@ -89,6 +97,14 @@ bool sphere_collision_check(float x0, float y0, float size0, float x1, float y1,
 
 }
 
+bool Rect_collision_check(int left1, int top1, int right1, int bottom1, int left2, int top2, int right2, int bottom2)
+{
+	if (right2 >= left1 && right1 >= left2 && bottom2 >= top1 && bottom1 >= top2)
+		return true;
+	else
+		return false;
+}
+
 void Render_Draw(int x1,int y1,int x2, int y2,int pos_x,int pos_y,LPDIRECT3DTEXTURE9 name)
 {
 	RECT rect;
@@ -114,6 +130,26 @@ void Create_Texture(LPCWSTR filename,LPDIRECT3DTEXTURE9 * sprite_name)
 		NULL,    // no image info struct
 		NULL,    // not using 256 colors
 		sprite_name);    // load to sprite
+}
+
+void Create_Font()
+{
+	D3DXCreateFont(d3ddev,
+		30, 0,
+		FW_NORMAL,
+		1,
+		FALSE,
+		DEFAULT_CHARSET,
+		OUT_DEFAULT_PRECIS,
+		DEFAULT_QUALITY,
+		DEFAULT_PITCH || FF_DONTCARE,
+		L"Arial",
+		&font);
+}
+
+void Play_Sound()
+{
+	sound.PlayWave();
 }
 
 //주인공 클래스 
@@ -145,6 +181,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	ShowWindow(hWnd, nCmdShow);
 
 	// set up and initialize Direct3D
+
 	initD3D(hWnd);
 
 	init_game();
@@ -168,7 +205,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
 		do_game_logic();
 
 		render_frame();
-
 		// check the 'escape' key
 		if (KEY_DOWN(VK_ESCAPE))
 			PostMessage(hWnd, WM_DESTROY, 0, 0);
@@ -186,13 +222,14 @@ int WINAPI WinMain(HINSTANCE hInstance,
 // this is the main message handler for the program
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	
 	switch (message)
 	{
-	case WM_DESTROY:
-	{
-		PostQuitMessage(0);
-		return 0;
-	} break;
+		case WM_DESTROY:
+		{
+			PostQuitMessage(0);
+			return 0;
+		} break;
 	}
 
 	return DefWindowProc(hWnd, message, wParam, lParam);
@@ -219,7 +256,6 @@ void initD3D(HWND hWnd)
 
 	//사운드 초기화
 
-
 	// create a device class using this information and the info from the d3dpp stuct
 	d3d->CreateDevice(D3DADAPTER_DEFAULT,
 		D3DDEVTYPE_HAL,
@@ -228,8 +264,12 @@ void initD3D(HWND hWnd)
 		&d3dpp,
 		&d3ddev);
 
-	sound.CreateDirectSound(hWnd);
-	//사운드 크리에이트
+
+	//폰트 크리에이트
+	Create_Font();
+
+	sound.DSoundInit(hWnd);
+	sound.LoadWave(L"BGM1.wav");
 
 	// create the Direct3D Sprite object
 										  //스프라이트 생성
@@ -248,8 +288,11 @@ void initD3D(HWND hWnd)
 	// 백그라운드
 	Create_Texture(L"BackGround.png", &sprite_background);
 
-		// UI 버튼
+		// UI
 	Create_Texture(L"UI.png", &sprite_ui);
+
+	// 맨위 UI 상태창 
+	Create_Texture(L"UI2.png", &sprite_ui_status);
 
 	//베이스 기지
 	Create_Texture(L"Base.png", &sprite_base);
@@ -268,11 +311,6 @@ void initD3D(HWND hWnd)
 void init_game(void)
 {
 	gm->Init();
-}
-
-void sound_run()
-{
-	//
 }
 
 void do_game_logic(void)
@@ -309,7 +347,7 @@ void do_game_logic(void)
 		break;
 
 	case GameState::ingame:
-
+			
 			if (KEY_DOWN(VK_UP))
 				//hero.move(MOVE_UP);
 
@@ -326,9 +364,11 @@ void do_game_logic(void)
 			}
 			if (KEY_DOWN(VK_SPACE))
 			{
-				if (CC.Fire == true)
+
+				if (gm->energy_percent == 100)
 				{
 					CC.Fire = false;
+					gm->energy_percent = 0;
 				}
 			}
 		break;
@@ -346,10 +386,18 @@ void render_frame(void)
 	///////////////////////////////////
 	//백그라운드
 
+
 	switch (gamestate)
 	{
 	case GameState::start_menu://시작메뉴
 	{
+		if (gm->wait_music < 1)
+		{
+			sound.PlayWave();
+			gm->wait_music++;
+			break;
+		}
+		
 		Render_Draw(0,0,SCREEN_WIDTH,SCREEN_HEIGHT,0,0,sprite_start_menu);
 		break;
 	}
@@ -366,11 +414,36 @@ void render_frame(void)
 			gm->wait_count++;
 			Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_story);
 			break;
+			
+		}
+		//백 그라운드
+		Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_background);
+
+		//UI버튼
+		Render_Draw(0, gm->current_game_stage * 120, 800, 120, 0, 480, sprite_ui);
+
+		//맨위 UI
+		Render_Draw(0, 0, 800, 60, 0, 0, sprite_ui_status);
+
+		sprintf(gm->unit_str, "아군병력MAX %d / 30        ",gm->unit_count);
+		font->DrawTextA(d3dspt,gm->unit_str,str_len,&gm->unit_rect,DT_NOCLIP, D3DCOLOR_XRGB(0, 0, 0));
+
+		sprintf(gm->unit_enemy_str, "남은 적군수 : %d          ", gm->unit_enemy_count);
+		font->DrawTextA(d3dspt, gm->unit_enemy_str, str_len, &gm->unit_enemy_rect, DT_NOCLIP, D3DCOLOR_XRGB(0, 0, 0));
+
+		sprintf(gm->energy_str, "충전게이지 : %d           ", gm->energy_percent);
+		font->DrawTextA(d3dspt, gm->energy_str, str_len, &gm->energy_rect, DT_NOCLIP, D3DCOLOR_XRGB(0, 0, 0));
+
+		//베이스기지
+		gm->wait_energy++;
+		if (gm->wait_energy == 5)
+		{
+			gm->wait_energy = 0;
+			gm->energy_percent++;
+			if (gm->energy_percent > 100)
+				gm->energy_percent = 100;
 		}
 
-
-		Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_background);
-		//베이스기지
 		if (CC.Fire == false)
 		{
 			//베이스 기지 공격
@@ -395,15 +468,10 @@ void render_frame(void)
 			Render_Draw(0, 0, 150, 300, CC.Position_x, CC.Position_y, sprite_base);
 		}
 
-		//UI버튼
-		Render_Draw(0, gm->current_game_stage * 120, 800, 120, 0, 480, sprite_ui);
-
 		break;
 	}
 
 	}
-
-
 	
 	///////////////////////////////
 	d3dspt->End();    // end sprite drawing
@@ -430,6 +498,7 @@ void cleanD3D(void)
 	sprite_story->Release();
 	sprite_background->Release();
 	sprite_ui->Release();
+	sprite_ui_status->Release();
 
 	sprite_base->Release();
 	sprite_base_attack->Release();
@@ -437,7 +506,8 @@ void cleanD3D(void)
 
 	CC.~CommandCenter();
 
-	//sound.DeleteDirectSound();
+	sound.ReleaseDSound();
+	font->Release();
 
 	return;
 }

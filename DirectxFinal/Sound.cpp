@@ -4,8 +4,7 @@
 
 Sound::Sound()
 {
-	g_lpDS = NULL;
-	g_bPlay = FALSE;
+	running = true;
 }
 
 
@@ -13,135 +12,101 @@ Sound::~Sound()
 {
 }
 
-BOOL Sound::CreateDirectSound(HWND hWnd)
+BOOL Sound::LoadWave(LPWSTR filename)
 {
-	if (DirectSoundCreate8(NULL, &g_lpDS, NULL) != DS_OK)
-		return FALSE;
-
-	if (g_lpDS->SetCooperativeLevel(hWnd, DSSCL_NORMAL) != DS_OK)
-		return FALSE;
-
-	return TRUE;
-}
-
-void Sound::DeleteDirectSound()
-{
-	g_lpDS->Release();
-	g_lpDS = NULL;
-}
-
-BOOL Sound::LoadWave(LPWSTR lpFileName, LPDIRECTSOUNDBUFFER* lpDSBuffer)
-{
-	HMMIO hmmio;
-	MMCKINFO ckInRIFF,ckIn;
-	PCMWAVEFORMAT pcmWaveFormat;
-	WAVEFORMATEX* pWaveFormat;
-
-	hmmio = mmioOpen(lpFileName, NULL, MMIO_ALLOCBUF | MMIO_READ);
-	if (hmmio == NULL) return FALSE;
-
-	ckInRIFF.fccType = mmioFOURCC('W', 'A', 'V', 'E');
-	if ((mmioDescend(hmmio, &ckInRIFF, NULL, MMIO_FINDRIFF)) != 0)
+	HMMIO wavefile;
+	wavefile = mmioOpen(filename, 0, MMIO_READ | MMIO_ALLOCBUF);
+	if (wavefile == NULL)
 	{
-		mmioClose(hmmio, 0);
-		return FALSE;
+		return false;
 	}
 
-	ckIn.ckid = mmioFOURCC('f', 'm', 't', ' ');
-	if (mmioDescend(hmmio,&ckIn, &ckInRIFF, MMIO_FINDCHUNK) != 0)
+	MMCKINFO parent;
+	memset(&parent, 0, sizeof(MMCKINFO));
+	parent.fccType = mmioFOURCC('W', 'A', 'V', 'E');
+	mmioDescend(wavefile, &parent, 0, MMIO_FINDRIFF);
+
+	MMCKINFO child;
+	memset(&child, 0, sizeof(MMCKINFO));
+	child.fccType = mmioFOURCC('f', 'm', 't', ' ');
+	mmioDescend(wavefile, &child, &parent, 0);
+
+	WAVEFORMATEX wavefmt;
+	mmioRead(wavefile, (char*)&wavefmt, sizeof(wavefmt));
+	if (wavefmt.wFormatTag != WAVE_FORMAT_PCM)
 	{
-		mmioClose(hmmio, 0);
-		return FALSE;
+		return false;
 	}
 
-	if (mmioRead(hmmio, (HPSTR)&pcmWaveFormat, sizeof(pcmWaveFormat)) != sizeof(pcmWaveFormat))
+	mmioAscend(wavefile, &child, 0);
+	child.ckid = mmioFOURCC('d', 'a', 't', 'a');
+	mmioDescend(wavefile, &child, &parent, MMIO_FINDCHUNK);
+
+	DSBUFFERDESC bufdesc;
+	memset(&bufdesc, 0, sizeof(DSBUFFERDESC));
+	bufdesc.dwSize = sizeof(DSBUFFERDESC);
+
+	bufdesc.dwFlags = 0;
+	bufdesc.dwBufferBytes = child.cksize;
+	bufdesc.lpwfxFormat = &wavefmt;
+	if ((lpDirectSound->CreateSoundBuffer(&bufdesc, &dsbSound, NULL)) != DS_OK)
 	{
-		mmioClose(hmmio, 0);
-	}
-	
-	pWaveFormat = new WAVEFORMATEX;
-
-	memcpy(pWaveFormat, &pcmWaveFormat, sizeof(pcmWaveFormat));
-	pWaveFormat->cbSize = 0;
-
-	if (mmioAscend(hmmio, &ckIn, 0))
-	{
-		mmioClose(hmmio, 0);
-		return FALSE;
-	}
-
-	BYTE * pData = NULL;
-	pData = new BYTE[ckIn.cksize];
-	mmioRead(hmmio, (LPSTR)pData, ckIn.cksize);
-
-	mmioClose(hmmio, 0);
-
-	DSBUFFERDESC dsbd;
-	ZeroMemory(&dsbd, sizeof(DSBUFFERDESC));
-	dsbd.dwSize = sizeof(DSBUFFERDESC);
-	dsbd.dwFlags = DSBCAPS_CTRLDEFAULT | DSBCAPS_STATIC | DSBCAPS_LOCSOFTWARE;
-	dsbd.dwBufferBytes = ckIn.cksize;
-	dsbd.lpwfxFormat = pWaveFormat;
-
-	if (g_lpDS->CreateSoundBuffer(&dsbd, lpDSBuffer, NULL) != DS_OK)
-		return FALSE;
-
-	VOID *pBuff1 = NULL;
-	VOID *pBuff2 = NULL;
-	DWORD dwLength;
-	DWORD dwLength2;
-
-	if ((*lpDSBuffer)->Lock(0, dsbd.dwBufferBytes, &pBuff1, &dwLength, &pBuff2, &dwLength2, 0L) != DS_OK)
-	{
-		(*lpDSBuffer)->Release();
-		(*lpDSBuffer) = NULL;
-		return FALSE;
+		return false;
 	}
 
-	memcpy(pBuff1, pData, dwLength);
-	memcpy(pBuff2, (pData + dwLength), dwLength2);
+	void *write1 = 0, *write2 = 0;
+	unsigned long length1, length2;
+	dsbSound->Lock(0, child.cksize, &write1, &length1, &write2, &length2, 0);
+	if (write1 > 0)
+		mmioRead(wavefile, (char*)write1, length1);
+	if (write2 > 0)
+		mmioRead(wavefile, (char*)write2, length2);
+	dsbSound->Unlock(write1, length1, write2, length2);
 
-	(*lpDSBuffer)->Unlock(pBuff1, dwLength, pBuff2, dwLength2);
-	pBuff1 = pBuff2 = NULL;
+	mmioClose(wavefile, 0);
 
-	delete[] pData;
-	delete[] pWaveFormat;
+	return true;
+}
 
-	return TRUE;
+BOOL Sound::DSoundInit(HWND hWnd)
+{
+	if (DirectSoundCreate8(NULL, &lpDirectSound, NULL) != DS_OK)
+	{
+		return (false);
+	}
+
+	if (lpDirectSound->SetCooperativeLevel(hWnd, DSSCL_NORMAL) != DS_OK)
+	{
+		return (false);
+	}
+
+	return true;
+}
+
+void Sound::ReleaseDSound()
+{
+	if (dsbSound != NULL)
+	{
+		dsbSound->Release();
+		dsbSound = NULL;
+	}
+
+	if (lpDirectSound != NULL)
+	{
+		lpDirectSound->Release();
+		lpDirectSound = NULL;
+	}
 
 }
 
-void Sound::Play(LPDIRECTSOUNDBUFFER lpDSBuffer, BOOL Loop)
+void Sound::PlayWave()
 {
-	if (lpDSBuffer == NULL) return;
-
-	if (!lpDSBuffer->Play(0, 0, (Loop) ? 1 : 0)) return;
-
-	g_bPlay = TRUE;
+	dsbSound->SetCurrentPosition(10);
+	dsbSound->Play(0, 0, 1);
 }
 
-void Sound::Stop(LPDIRECTSOUNDBUFFER lpDSBuffer)
+void Sound::StopWave()
 {
-	if (lpDSBuffer == NULL) return;
-
-	lpDSBuffer->Stop();
-
-	g_bPlay = FALSE;
-	lpDSBuffer->SetCurrentPosition(0L);
-}
-
-BOOL Sound::SetVolume(LPDIRECTSOUNDBUFFER lpDSBuffer, LONG lVolume)
-{
-	if (lpDSBuffer->SetVolume(lVolume))
-		return FALSE;
-
-	return TRUE;
-}
-
-BOOL Sound::SetPan(LPDIRECTSOUNDBUFFER lpDSBuffer, LONG lPan)
-{
-	if (lpDSBuffer->SetPan(lPan) != DS_OK)
-		return FALSE;
-
-	return TRUE;
+	dsbSound->Stop();
+	dsbSound->SetCurrentPosition(0);
 }
