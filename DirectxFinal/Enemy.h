@@ -1,13 +1,16 @@
 #pragma once
-class Enemy
+#include"Unit.h"
+
+class Enemy : Unit
 {
 public:
 	Enemy();
 	~Enemy();
 
 public:
-	int hp;
-	int move_speed;
+	void Enemy_Init();
+	void Knock_Back();
+
 
 };
 

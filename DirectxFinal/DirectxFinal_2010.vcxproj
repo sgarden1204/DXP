@@ -380,6 +380,7 @@
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="Sound.cpp" />
+    <ClCompile Include="Unit.cpp" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
@@ -389,6 +390,7 @@
     <ClInclude Include="GameManager.h" />
     <CLInclude Include="resource.h" />
     <ClInclude Include="Sound.h" />
+    <ClInclude Include="Unit.h" />
     <ResourceCompile Include="DirectxFinal.rc" />
   </ItemGroup>
   <ItemGroup>
