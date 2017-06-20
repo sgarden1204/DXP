@@ -21,6 +21,7 @@
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Unit.cpp" />
+    <ClCompile Include="Friend.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CLInclude Include="resource.h">
@@ -34,6 +35,7 @@
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="Unit.h" />
+    <ClInclude Include="Friend.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

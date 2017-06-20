@@ -27,6 +27,9 @@ public:
 	void Init();
 
 public:
+
+	int  cool_down;
+
 	int wait_count;
 	int wait_music;
 	int wait_energy;

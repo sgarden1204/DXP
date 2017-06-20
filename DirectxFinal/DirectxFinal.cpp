@@ -8,6 +8,7 @@
 #include"CommandCenter.h"
 #include"Sound.h"
 #include"GameManager.h"
+#include"Friend.h"
 
 // define the screen resolution and keyboard macros
 #define SCREEN_WIDTH  800
@@ -15,7 +16,8 @@
 #define KEY_DOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
 #define KEY_UP(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 0 : 1)
 
-#define str_len 25
+#define STR_LEN 25
+#define FRIEND_MAX 10
 
 // include the Direct3D Library file
 #pragma comment (lib, "d3d9.lib")
@@ -46,6 +48,9 @@ LPDIRECT3DTEXTURE9 sprite_base;
 LPDIRECT3DTEXTURE9 sprite_base_attack;
 LPDIRECT3DTEXTURE9 sprite_base_shoot;
 
+LPDIRECT3DTEXTURE9 sprite_cat_basic_atk;
+LPDIRECT3DTEXTURE9 sprite_cat_basic_move;
+
 void initD3D(HWND hWnd);    // sets up and initializes Direct3D
 void render_frame(void);    // renders a single frame
 void cleanD3D(void);		// closes Direct3D and releases memory
@@ -65,7 +70,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 using namespace std;
 //////////////////////////////////////////////////
 
-enum class GameState : int 
+enum Test
+{
+	ap, ape
+};
+
+enum GameState : int 
 {
 	start_menu, end_menu, ingame
 };
@@ -75,13 +85,35 @@ enum class GameStage : int
 	stage1, stage2, stage3, stage4, stage5, stage6, stage7
 };
 
-GameState gamestate = GameState::start_menu;
-GameStage gamestage = GameStage::stage1;
+enum class FriendType : int
+{
+	basic, tank, axe, angle, cow, hero
+};
+
+enum class EnemyType : int
+{
+	dog, snake, Udog, Usnake, bear,blackdog,blackbear
+};
+
+enum class UnitState : int
+{
+	move, atk, die
+};
+
+GameState game_state = GameState::start_menu;
+GameStage game_stage = GameStage::stage1;
+FriendType friend_type;
+EnemyType enemy_type;
+UnitState unit_state = UnitState::move;
+
 
 CommandCenter CC;
 Sound sound;
 GameManager * GameManager::instance = nullptr;
 GameManager * gm = GameManager::get_Instance();
+
+Friend Cat[FRIEND_MAX];
+
 //기본 클래스 
 class entity {
 
@@ -303,7 +335,9 @@ void initD3D(HWND hWnd)
 	//베이스기지 총알
 	Create_Texture(L"Base_Shoot.png", &sprite_base_shoot);
 
-	
+	//Basic Cat
+	Create_Texture(L"Basic_Cat_Atk.png", &sprite_cat_basic_atk);
+	Create_Texture(L"Basic_Cat_Move.png", &sprite_cat_basic_move);
 
 	return;
 }
@@ -318,18 +352,18 @@ void do_game_logic(void)
 
 	//////////////////////////
 		
-	switch (gamestate)
+	switch (game_state)
 	{
 	case GameState::start_menu:
 
 		if (KEY_DOWN(VK_RETURN)) // 스타트에서 엔터키 입력시 인게임으로 이동
 		{
-			gamestate = GameState::ingame;
+			game_state = GameState::ingame;
 			break;
 		}
 		else if (KEY_DOWN(VK_DOWN) || KEY_DOWN(VK_LEFT))
 		{
-			gamestate = GameState::end_menu;
+			game_state = GameState::end_menu;
 		}
 
 		break;
@@ -342,35 +376,153 @@ void do_game_logic(void)
 		}
 		 else if (KEY_DOWN(VK_UP) || KEY_DOWN(VK_RIGHT))
 		{
-			gamestate = GameState::start_menu;
+			game_state = GameState::start_menu;
 		}
 		break;
 
 	case GameState::ingame:
-			
-			if (KEY_DOWN(VK_UP))
-				//hero.move(MOVE_UP);
+		
+		gm->cool_down--;
 
-			if (KEY_DOWN(VK_DOWN))
-				//hero.move(MOVE_DOWN);
+		//타입 버튼 1번 기본 캣
+		if (KEY_DOWN(0x31)) // basic_cat_setting & active
+		{
+			if (gm->cool_down < 0)
+			{
+				gm->cool_down = 30;
 
-			if (KEY_DOWN(VK_LEFT))
-			{
-				//hero.move(MOVE_LEFT);
-			}
-			if (KEY_DOWN(VK_RIGHT))
-			{
-				//hero.move(MOVE_RIGHT);
-			}
-			if (KEY_DOWN(VK_SPACE))
-			{
-
-				if (gm->energy_percent == 100)
+				for (int i = 0; i < FRIEND_MAX; i++)
 				{
-					CC.Fire = false;
-					gm->energy_percent = 0;
+					if (Cat[i].active == false)
+					{
+						Cat[i].active = true;
+						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 10, 5, 1,static_cast<int>(FriendType::basic));
+						break;
+						//Hp 10, ATK 5, SPD 1
+					}
 				}
 			}
+		}
+
+		//타입 버튼 2번 탱크 캣
+		if (KEY_DOWN(0x32)) // basic_cat_setting & active
+		{
+			if (gm->cool_down < 0)
+			{
+				gm->cool_down = 30;
+
+				for (int i = 0; i < FRIEND_MAX; i++)
+				{
+					if (Cat[i].active == false)
+					{
+						Cat[i].active = true;
+						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 30, 3, 1, static_cast<int>(FriendType::tank));
+						break;
+						//Hp 30, ATK 3, SPD 1
+					}
+				}
+			}
+		}
+		//타입 버튼 3번 도끼 캣
+		if (KEY_DOWN(0x33)) // basic_cat_setting & active
+		{
+			if (gm->cool_down < 0)
+			{
+				gm->cool_down = 30;
+
+				for (int i = 0; i < FRIEND_MAX; i++)
+				{
+					if (Cat[i].active == false)
+					{
+						Cat[i].active = true;
+						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 10, 15, 1, static_cast<int>(FriendType::axe));
+						break;
+						//Hp 10, ATK 15, SPD 1
+					}
+				}
+			}
+		}
+
+		//타입 버튼4번 천사 캣
+		if (KEY_DOWN(0x34)) // basic_cat_setting & active
+		{
+			if (gm->cool_down < 0)
+			{
+				gm->cool_down = 30;
+
+				for (int i = 0; i < FRIEND_MAX; i++)
+				{
+					if (Cat[i].active == false)
+					{
+						Cat[i].active = true;
+						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 10, 1, 2, static_cast<int>(FriendType::angle));
+						break;
+						//Hp 10, ATK 1, SPD 2
+					}
+				}
+			}
+		}
+
+		//버튼 타입 5 소 캣
+		if (KEY_DOWN(0x35)) // basic_cat_setting & active
+		{
+			if (gm->cool_down < 0)
+			{
+				gm->cool_down = 30;
+
+				for (int i = 0; i < FRIEND_MAX; i++)
+				{
+					if (Cat[i].active == false)
+					{
+						Cat[i].active = true;
+						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 10, 5, 3, static_cast<int>(FriendType::cow));
+						break;
+						//Hp 10, ATK 5, SPD 3
+					}
+				}
+			}
+		}
+
+		//버튼 타입 6 히어로 캣
+		if (KEY_DOWN(0x36)) // basic_cat_setting & active
+		{
+			if (gm->cool_down < 0)
+			{
+				gm->cool_down = 30;
+
+				for (int i = 0; i < FRIEND_MAX; i++)
+				{
+					if (Cat[i].active == false)
+					{
+						Cat[i].active = true;
+						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 20, 10, 2, static_cast<int>(FriendType::hero));
+						break;
+						//Hp 20, ATK 10, SPD 2
+					}
+				}
+			}
+		}
+
+
+
+		for (int i = 0; i < FRIEND_MAX; i++)
+		{
+			if (Cat[i].active == true)
+			{
+				if(Cat[i].pos_x < 800 && Cat[i].pos_x > 100 )
+					Cat[i].Unit_Move();
+				//여기서 내일 적들과 처리 해야됨
+			}
+		}
+
+		if (KEY_DOWN(VK_SPACE))
+		{
+			if (gm->energy_percent == 100)
+			{
+				CC.Fire = false;
+				gm->energy_percent = 0;
+			}
+		}
 		break;
 	}
 }
@@ -387,7 +539,7 @@ void render_frame(void)
 	//백그라운드
 
 
-	switch (gamestate)
+	switch (game_state)
 	{
 	case GameState::start_menu://시작메뉴
 	{
@@ -426,13 +578,13 @@ void render_frame(void)
 		Render_Draw(0, 0, 800, 60, 0, 0, sprite_ui_status);
 
 		sprintf(gm->unit_str, "아군병력MAX %d / 30        ",gm->unit_count);
-		font->DrawTextA(d3dspt,gm->unit_str,str_len,&gm->unit_rect,DT_NOCLIP, D3DCOLOR_XRGB(0, 0, 0));
+		font->DrawTextA(d3dspt,gm->unit_str,STR_LEN,&gm->unit_rect,DT_NOCLIP, D3DCOLOR_XRGB(0, 0, 0));
 
 		sprintf(gm->unit_enemy_str, "남은 적군수 : %d          ", gm->unit_enemy_count);
-		font->DrawTextA(d3dspt, gm->unit_enemy_str, str_len, &gm->unit_enemy_rect, DT_NOCLIP, D3DCOLOR_XRGB(0, 0, 0));
+		font->DrawTextA(d3dspt, gm->unit_enemy_str, STR_LEN, &gm->unit_enemy_rect, DT_NOCLIP, D3DCOLOR_XRGB(0, 0, 0));
 
 		sprintf(gm->energy_str, "충전게이지 : %d           ", gm->energy_percent);
-		font->DrawTextA(d3dspt, gm->energy_str, str_len, &gm->energy_rect, DT_NOCLIP, D3DCOLOR_XRGB(0, 0, 0));
+		font->DrawTextA(d3dspt, gm->energy_str, STR_LEN, &gm->energy_rect, DT_NOCLIP, D3DCOLOR_XRGB(0, 0, 0));
 
 		//베이스기지
 		gm->wait_energy++;
@@ -468,6 +620,40 @@ void render_frame(void)
 			Render_Draw(0, 0, 150, 300, CC.Position_x, CC.Position_y, sprite_base);
 		}
 
+		//타입별 드로우
+		for (int i = 0; i < FRIEND_MAX; i++)
+		{
+			if (Cat[i].active == true)
+			{
+				switch(friend_type)
+				{ 
+				case FriendType::basic:
+					Render_Draw(50 * (Cat[i].frame / 5), 0, 50 * ((Cat[i].frame / 5) + 1), 60, Cat[i].pos_x - Cat[i].move_speed, Cat[i].pos_y, sprite_cat_basic_move);
+
+					Cat[i].frame++;
+
+					if (Cat[i].frame >= 15)
+						Cat[i].frame = 0;
+
+					break;
+				case FriendType::tank:
+					break;
+				case FriendType::axe:
+					break;
+				case FriendType::angle:
+					break;
+				case FriendType::cow:
+					break;
+				case FriendType::hero:
+					break;
+				}
+			}
+
+			else
+				continue;
+		}
+
+		//////////////////////////// 여기까지 ingame
 		break;
 	}
 
@@ -490,8 +676,6 @@ void cleanD3D(void)
 	d3ddev->Release();
 	d3d->Release();
 
-	//g_lpDSBG->Release();
-
 	sprite_start_menu->Release();
 	sprite_end_menu->Release();
 
@@ -504,7 +688,8 @@ void cleanD3D(void)
 	sprite_base_attack->Release();
 	sprite_base_shoot->Release();
 
-	CC.~CommandCenter();
+	sprite_cat_basic_atk->Release();
+	sprite_cat_basic_move->Release();
 
 	sound.ReleaseDSound();
 	font->Release();

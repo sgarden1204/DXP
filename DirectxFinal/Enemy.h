@@ -1,7 +1,7 @@
 #pragma once
 #include"Unit.h"
 
-class Enemy : Unit
+class Enemy : public Unit
 {
 public:
 	Enemy();

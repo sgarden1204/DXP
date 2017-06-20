@@ -16,6 +16,8 @@ void GameManager::Render()
 
 void GameManager::Init()
 {
+	cool_down = 10;
+
 	wait_music = 0;
 	wait_count = 0;
 	wait_energy = 0;

@@ -378,6 +378,7 @@
     <ClCompile Include="CommandCenter.cpp" />
     <ClCompile Include="DirectxFinal.cpp" />
     <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="Friend.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="Sound.cpp" />
     <ClCompile Include="Unit.cpp" />
@@ -387,6 +388,7 @@
   <ItemGroup>
     <ClInclude Include="CommandCenter.h" />
     <ClInclude Include="Enemy.h" />
+    <ClInclude Include="Friend.h" />
     <ClInclude Include="GameManager.h" />
     <CLInclude Include="resource.h" />
     <ClInclude Include="Sound.h" />

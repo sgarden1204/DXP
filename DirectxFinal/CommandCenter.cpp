@@ -5,7 +5,7 @@ CommandCenter::CommandCenter()
 	Fire = true;
 
 	Position_x = 650.0f;
-	Position_y = 175.0f;
+	Position_y = 130.0f;
 
 	Fire_Frame = 1;
 }
