@@ -9,6 +9,7 @@
 #include"Sound.h"
 #include"GameManager.h"
 #include"Friend.h"
+#include"Enemy.h"
 
 // define the screen resolution and keyboard macros
 #define SCREEN_WIDTH  800
@@ -18,6 +19,11 @@
 
 #define STR_LEN 25
 #define FRIEND_MAX 10
+#define ENEMY_MAX 10
+
+#define MOVE 1
+#define ATK 2
+#define DIE 3
 
 // include the Direct3D Library file
 #pragma comment (lib, "d3d9.lib")
@@ -50,6 +56,9 @@ LPDIRECT3DTEXTURE9 sprite_base_shoot;
 
 LPDIRECT3DTEXTURE9 sprite_cat_basic_atk;
 LPDIRECT3DTEXTURE9 sprite_cat_basic_move;
+
+LPDIRECT3DTEXTURE9 sprite_snake_atk;
+LPDIRECT3DTEXTURE9 sprite_snake_move;
 
 void initD3D(HWND hWnd);    // sets up and initializes Direct3D
 void render_frame(void);    // renders a single frame
@@ -87,7 +96,7 @@ enum class GameStage : int
 
 enum class FriendType : int
 {
-	basic, tank, axe, angle, cow, hero
+	basic = 1, tank, axe, angle, cow, hero
 };
 
 enum class EnemyType : int
@@ -113,6 +122,7 @@ GameManager * GameManager::instance = nullptr;
 GameManager * gm = GameManager::get_Instance();
 
 Friend Cat[FRIEND_MAX];
+Enemy enemy[ENEMY_MAX];
 
 //기본 클래스 
 class entity {
@@ -339,6 +349,10 @@ void initD3D(HWND hWnd)
 	Create_Texture(L"Basic_Cat_Atk.png", &sprite_cat_basic_atk);
 	Create_Texture(L"Basic_Cat_Move.png", &sprite_cat_basic_move);
 
+	//Snake
+	Create_Texture(L"Snake_Atk.png", &sprite_snake_atk);
+	Create_Texture(L"Snake_Move.png", &sprite_snake_move);
+
 	return;
 }
  
@@ -396,9 +410,10 @@ void do_game_logic(void)
 					if (Cat[i].active == false)
 					{
 						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 10, 5, 1,static_cast<int>(FriendType::basic));
+						Cat[i].state = MOVE;
+						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 500, 5, 1,static_cast<int>(FriendType::basic));
 						break;
-						//Hp 10, ATK 5, SPD 1
+						//Hp 50, ATK 5, SPD 1
 					}
 				}
 			}
@@ -503,17 +518,71 @@ void do_game_logic(void)
 			}
 		}
 
+		switch (game_stage)
+		{
+		case GameStage::stage1:
+			for (int i = 0; i < ENEMY_MAX; i++)
+			{
+				if (enemy[i].active == false)
+				{
+					enemy[i].active = true;
+					enemy[i].state = MOVE;
+					enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y+240, 1000, 5, 1, static_cast<int>(EnemyType::snake));
+				//뱀 Hp 1000, Atk 5, Speed 1
+				}
 
+				else
+					continue;
+
+			}
+			break;
+		case GameStage::stage2:
+
+			break;
+		}
 
 		for (int i = 0; i < FRIEND_MAX; i++)
 		{
+			if (enemy[i].active == true)
+			{
+				if(enemy[i].state == MOVE)
+					enemy[i].Unit_Move();
+			}
+
 			if (Cat[i].active == true)
 			{
-				if(Cat[i].pos_x < 800 && Cat[i].pos_x > 100 )
+				if (Cat[i].state == MOVE)
 					Cat[i].Unit_Move();
-				//여기서 내일 적들과 처리 해야됨
 			}
 		}
+
+		for (int i = 0; i < FRIEND_MAX; i++)
+		{
+			for (int j = 0; j < ENEMY_MAX; j++)
+			{
+				if (Cat[i].active == true)
+				{
+					if (Cat[i].pos_x - enemy[j].pos_x <= 80)
+					{
+						Cat[i].hp -= enemy[j].atk_damage;
+						enemy[j].hp -= Cat[i].atk_damage;
+						Cat[i].state = ATK;
+						enemy[j].state = ATK;
+					}
+
+					if (Cat[i].hp <= 0)
+					{
+						Cat[i].pos_x = 900;
+						Cat[i].state = DIE;
+						enemy[j].state = MOVE;
+					}
+				}
+			}
+		}
+
+
+
+
 
 		if (KEY_DOWN(VK_SPACE))
 		{
@@ -525,6 +594,7 @@ void do_game_logic(void)
 		}
 		break;
 	}
+
 }
 // this is the function used to render a single frame
 void render_frame(void)
@@ -625,32 +695,78 @@ void render_frame(void)
 		{
 			if (Cat[i].active == true)
 			{
-				switch(friend_type)
+
+				switch(Cat[i].type)
 				{ 
-				case FriendType::basic:
-					Render_Draw(50 * (Cat[i].frame / 5), 0, 50 * ((Cat[i].frame / 5) + 1), 60, Cat[i].pos_x - Cat[i].move_speed, Cat[i].pos_y, sprite_cat_basic_move);
+				case 1: // 베이직 캣 타입
 
-					Cat[i].frame++;
+					if (Cat[i].state == MOVE)
+					{
+						Render_Draw(50 * (Cat[i].frame / 5), 0, 50 * ((Cat[i].frame / 5) + 1), 60, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_basic_move);
 
-					if (Cat[i].frame >= 15)
-						Cat[i].frame = 0;
+						Cat[i].frame++;
+
+						if (Cat[i].frame >= 15)
+							Cat[i].frame = 0;
+					}
+
+					else if (Cat[i].state == ATK)
+					{
+						Render_Draw(50 * (Cat[i].frame / 5), 0, 50 * ((Cat[i].frame / 5) + 1), 60, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_basic_atk);
+
+						Cat[i].frame++;
+
+						if (Cat[i].frame >= 20)
+							Cat[i].frame = 0;
+					}
+
+					else if (Cat[i].hp <= 0)
+					{
+						Cat[i].state == DIE;
+						Cat[i].active == false;
+					}
 
 					break;
-				case FriendType::tank:
+				case 2: // 탱크 캣 타입
 					break;
-				case FriendType::axe:
+				case 3: // 액스 캣 타입
 					break;
-				case FriendType::angle:
+				case 4: // 엔젤 캣 타입
 					break;
-				case FriendType::cow:
+				case 5: // 카우 캣 타입
 					break;
-				case FriendType::hero:
+				case 6: // 히어로 캣 타입
 					break;
 				}
 			}
 
+
+
+
 			else
 				continue;
+		}
+
+		//스테이지 관련 드로우
+
+		switch (game_stage)
+		{
+		case GameStage::stage1:
+			for(int i = 0; i < ENEMY_MAX; i++)
+			{
+				Render_Draw(80 * (enemy[i].frame / 5), 0, 80 * ((enemy[i].frame / 5) + 1), 60, enemy[i].pos_x, enemy[i].pos_y, sprite_snake_move);
+
+				enemy[i].frame++;
+
+				if (enemy[i].frame >= 20)
+				{
+					enemy[i].frame = 0;
+				}
+			} 
+			break;
+		case GameStage::stage2:
+
+			break;
 		}
 
 		//////////////////////////// 여기까지 ingame
@@ -690,6 +806,9 @@ void cleanD3D(void)
 
 	sprite_cat_basic_atk->Release();
 	sprite_cat_basic_move->Release();
+
+	sprite_snake_atk->Release();
+	sprite_snake_move->Release();
 
 	sound.ReleaseDSound();
 	font->Release();
