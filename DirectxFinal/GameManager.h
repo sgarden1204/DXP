@@ -28,6 +28,11 @@ public:
 
 public:
 
+	int ending_count;
+
+	int active_unit_count;
+	int active_enemy_unit_count;
+
 	bool victory;
 	bool start;
 

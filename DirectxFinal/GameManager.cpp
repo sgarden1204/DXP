@@ -16,6 +16,11 @@ void GameManager::Render()
 
 void GameManager::Init()
 {
+	ending_count = 0;
+
+	active_unit_count = 0;
+	active_enemy_unit_count = 0;
+
 	victory = false;
 	start = false;
 

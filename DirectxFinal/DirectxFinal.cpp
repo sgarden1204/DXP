@@ -21,6 +21,8 @@
 #define FRIEND_MAX 10
 #define ENEMY_MAX 10
 
+#define TEST_SPEED 1
+
 // include the Direct3D Library file
 #pragma comment (lib, "d3d9.lib")
 #pragma comment (lib, "d3dx9.lib")
@@ -42,7 +44,15 @@ LPDIRECT3DTEXTURE9 sprite_start_menu;
 LPDIRECT3DTEXTURE9 sprite_end_menu;
 
 LPDIRECT3DTEXTURE9 sprite_story;
-LPDIRECT3DTEXTURE9 sprite_background;
+
+LPDIRECT3DTEXTURE9 sprite_background_stage1;
+LPDIRECT3DTEXTURE9 sprite_background_stage2;
+LPDIRECT3DTEXTURE9 sprite_background_stage3;
+LPDIRECT3DTEXTURE9 sprite_background_stage4;
+LPDIRECT3DTEXTURE9 sprite_background_stage5;
+LPDIRECT3DTEXTURE9 sprite_background_stage6;
+LPDIRECT3DTEXTURE9 sprite_background_stage7;
+
 LPDIRECT3DTEXTURE9 sprite_ui;
 LPDIRECT3DTEXTURE9 sprite_ui_status;
 LPDIRECT3DTEXTURE9 sprite_victory;
@@ -353,8 +363,14 @@ void initD3D(HWND hWnd)
 	//게임 스토리
 	Create_Texture(L"Story.png", &sprite_story);
 
-	// 백그라운드
-	Create_Texture(L"BackGround.png", &sprite_background);
+	// 백그라운드 
+	Create_Texture(L"BackGround1.png", &sprite_background_stage1);
+	Create_Texture(L"BackGround2.png", &sprite_background_stage2);
+	Create_Texture(L"BackGround3.png", &sprite_background_stage3);
+	Create_Texture(L"BackGround4.png", &sprite_background_stage4);
+	Create_Texture(L"BackGround5.png", &sprite_background_stage5);
+	Create_Texture(L"BackGround6.png", &sprite_background_stage6);
+	Create_Texture(L"BackGround7.png", &sprite_background_stage7);
 
 	// 승리, 준비
 	Create_Texture(L"Victory.png", &sprite_victory);
@@ -484,7 +500,7 @@ void do_game_logic(void)
 					if (Cat[i].active == false)
 					{
 						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+240, 500, 5, 1, FriendType::basic);
+						Cat[i].Unit_Init(CC.Position_x, CC.Position_y+240, 500, 5, 1, FriendType::basic);
 						gm->unit_count++;
 						break;
 						//Hp 500, ATK 5, SPD 1
@@ -505,7 +521,7 @@ void do_game_logic(void)
 					if (Cat[i].active == false)
 					{
 						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+180, 1500, 3, 1, FriendType::tank);
+						Cat[i].Unit_Init(CC.Position_x, CC.Position_y+180, 1500, 3, 1, FriendType::tank);
 						gm->unit_count++;
 						break;
 						//Hp 1500, ATK 3, SPD 1
@@ -609,7 +625,7 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::snake);
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 1 + TEST_SPEED, EnemyType::snake);
 						//뱀 Hp 1000, Atk 5, Speed 1
 					}
 
@@ -652,7 +668,7 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::dog);
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 1 + TEST_SPEED, EnemyType::dog);
 						//뱀 Hp 1000, Atk 5, Speed 1
 					}
 
@@ -695,7 +711,7 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::snake);
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 215, 500, 5, 1 + TEST_SPEED, EnemyType::Usnake);
 						//뱀 Hp 1000, Atk 5, Speed 1
 					}
 
@@ -738,7 +754,7 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::snake);
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 215, 500, 5, 1 + TEST_SPEED, EnemyType::Udog);
 						//뱀 Hp 1000, Atk 5, Speed 1
 					}
 
@@ -781,7 +797,7 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::snake);
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y +140, 500, 5, 1 + TEST_SPEED, EnemyType::snake);
 						//뱀 Hp 1000, Atk 5, Speed 1
 					}
 
@@ -824,7 +840,7 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::snake);
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 200, 500, 5, 1 + TEST_SPEED, EnemyType::snake);
 						//뱀 Hp 1000, Atk 5, Speed 1
 					}
 
@@ -867,7 +883,7 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::snake);
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 140, 500, 5, 1 + TEST_SPEED, EnemyType::snake);
 						//뱀 Hp 1000, Atk 5, Speed 1
 					}
 
@@ -923,9 +939,6 @@ void do_game_logic(void)
 							Cat[i].active = false;
 							Cat[i].state = UnitState::die;
 							enemy[j].state = UnitState::move;
-							gm->unit_count--;
-							if (gm->unit_count <= 0)
-								gm->unit_count = 0;
 						}
 
 						if (enemy[j].hp <= 0)
@@ -934,9 +947,9 @@ void do_game_logic(void)
 							enemy[j].active = false;
 							enemy[j].pos_x = -100;
 							Cat[i].state = UnitState::move;
-							gm->unit_enemy_count--;
-							if (gm->unit_enemy_count <= 0)
-								gm->unit_enemy_count = 0;
+							//gm->unit_enemy_count--;
+							//if (gm->unit_enemy_count <= 0)
+							//	gm->unit_enemy_count = 0;
 						}
 
 						break;
@@ -987,12 +1000,17 @@ void do_game_logic(void)
 
 		}
 
+		gm->active_unit_count = 0;
+		gm->active_enemy_unit_count = 0;
 		for (int i = 0; i < FRIEND_MAX; i++)
 		{
+
 			if (enemy[i].active == true)
 			{
 				if (enemy[i].state == UnitState::move && enemy[i].pos_x < 750)
 					enemy[i].Unit_Move();
+
+				gm->active_enemy_unit_count++;
 			}
 
 			if (Cat[i].active == true)
@@ -1000,13 +1018,21 @@ void do_game_logic(void)
 				if (Cat[i].state == UnitState::move && Cat[i].pos_x > 50)
 					Cat[i].Unit_Move();
 
-				if (Cat[i].pos_x < 50)
-				{
-					Cat[i].active = false;
-				}
+				//if (Cat[i].pos_x < 50)
+				//{
+				//	Cat[i].state = UnitState::die;
+				//	Cat[i].active = false;
+				//	Cat[i].pos_x = -100;
+				//}
+
+				gm->active_unit_count++;
 			}
 
 		}
+
+		gm->unit_count = gm->active_unit_count;
+		gm->unit_enemy_count = gm->active_enemy_unit_count;
+
 		///////////////////
 
 		if (KEY_DOWN(VK_SPACE))
@@ -1015,6 +1041,23 @@ void do_game_logic(void)
 			{
 				CC.Fire = false;
 				gm->energy_percent = 0;
+
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					if (enemy[i].pos_x >= 10)
+					{
+						enemy[i].hp = -1000;
+
+						if (enemy[i].hp <= 0)
+						{
+							enemy[i].active = false;
+							enemy[i].state = die;
+							enemy[i].pos_x = -100;
+
+							//gm->unit_enemy_count--;
+						}
+					}
+				}
 			}
 		}
 		break;
@@ -1064,7 +1107,32 @@ void render_frame(void)
 			
 		}
 		//백 그라운드
-		Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_background);
+
+		switch (game_stage)
+		{
+			case GameStage::stage1:
+				Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_background_stage1);
+			break;
+			case GameStage::stage2:
+				Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_background_stage2);
+			break;
+			case GameStage::stage3:
+				Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_background_stage3);
+			break;
+			case GameStage::stage4:
+				Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_background_stage4);
+			break;
+			case GameStage::stage5:
+				Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_background_stage5);
+			break;
+			case GameStage::stage6:
+				Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_background_stage6);
+			break;
+			case GameStage::stage7:
+				Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_background_stage7);
+			break;
+		}
+	
 
 		//UI버튼
 		Render_Draw(0,120*(gm->current_game_stage - 1), 800, 120 * gm->current_game_stage, 0, 480, sprite_ui);
@@ -1072,7 +1140,7 @@ void render_frame(void)
 		//맨위 UI
 		Render_Draw(0, 0, 800, 60, 0, 0, sprite_ui_status);
 
-		sprintf(gm->unit_str, "아군병력MAX %d / 30        ",gm->unit_count);
+		sprintf(gm->unit_str, "아군병력MAX %d / 10        ",gm->unit_count);
 		font->DrawTextA(d3dspt,gm->unit_str,STR_LEN,&gm->unit_rect,DT_NOCLIP, D3DCOLOR_XRGB(0, 0, 0));
 
 		sprintf(gm->unit_enemy_str, "남은 적군수 : %d          ", gm->unit_enemy_count);
@@ -1553,7 +1621,15 @@ void cleanD3D(void)
 	sprite_end_menu->Release();
 
 	sprite_story->Release();
-	sprite_background->Release();
+
+	sprite_background_stage1->Release();
+	sprite_background_stage2->Release();
+	sprite_background_stage3->Release();
+	sprite_background_stage4->Release();
+	sprite_background_stage5->Release();
+	sprite_background_stage6->Release();
+	sprite_background_stage7->Release();
+
 	sprite_ui->Release();
 	sprite_ui_status->Release();
 
