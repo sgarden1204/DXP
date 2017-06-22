@@ -56,8 +56,8 @@ LPDIRECT3DTEXTURE9 sprite_background_stage7;
 LPDIRECT3DTEXTURE9 sprite_ui;
 LPDIRECT3DTEXTURE9 sprite_ui_status;
 LPDIRECT3DTEXTURE9 sprite_victory;
-LPDIRECT3DTEXTURE9 sprite_start;
 LPDIRECT3DTEXTURE9 sprite_ending;
+LPDIRECT3DTEXTURE9 sprite_game_over;
 
 LPDIRECT3DTEXTURE9 sprite_base;
 LPDIRECT3DTEXTURE9 sprite_base_attack;
@@ -127,7 +127,7 @@ enum UnitState : int
 
 enum GameState : int 
 {
-	start_menu, end_menu, ingame
+	start_menu, end_menu, ingame, game_over, game_ending
 };
 
 enum  GameStage : int
@@ -372,10 +372,10 @@ void initD3D(HWND hWnd)
 	Create_Texture(L"BackGround6.png", &sprite_background_stage6);
 	Create_Texture(L"BackGround7.png", &sprite_background_stage7);
 
-	// 승리, 준비
+	// 라운드 승리 // 엔딩 // 패배
 	Create_Texture(L"Victory.png", &sprite_victory);
-	Create_Texture(L"Start.png", &sprite_start);
 	Create_Texture(L"Ending.png", &sprite_ending);
+	Create_Texture(L"GameOver.png", &sprite_game_over);
 
 		// UI
 	Create_Texture(L"UI.png", &sprite_ui);
@@ -642,6 +642,7 @@ void do_game_logic(void)
 				game_stage = GameStage::stage2;
 				gm->current_game_stage++;
 				gm->stage_ready = true;
+				gm->victory_count = 0;
 
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
@@ -685,6 +686,7 @@ void do_game_logic(void)
 				game_stage = GameStage::stage3;
 				gm->current_game_stage++;
 				gm->stage_ready = true;
+				gm->victory_count = 0;
 
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
@@ -728,6 +730,7 @@ void do_game_logic(void)
 				game_stage = GameStage::stage4;
 				gm->current_game_stage++;
 				gm->stage_ready = true;
+				gm->victory_count = 0;
 
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
@@ -771,6 +774,7 @@ void do_game_logic(void)
 				game_stage = GameStage::stage5;
 				gm->current_game_stage++;
 				gm->stage_ready = true;
+				gm->victory_count = 0;
 
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
@@ -814,6 +818,7 @@ void do_game_logic(void)
 				game_stage = GameStage::stage6;
 				gm->current_game_stage++;
 				gm->stage_ready = true;
+				gm->victory_count = 0;
 
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
@@ -857,6 +862,7 @@ void do_game_logic(void)
 				game_stage = GameStage::stage7;
 				gm->current_game_stage = 6;
 				gm->stage_ready = true;
+				gm->victory_count = 0;
 
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
@@ -897,8 +903,10 @@ void do_game_logic(void)
 
 			if (gm->unit_enemy_count <= 0)
 			{
-				game_stage = GameStage::stage7;
+				//game_stage = GameStage::stage7;
 				//gm->current_game_stage = 6; // UI 6개
+				game_state = GameState::game_ending;
+
 				gm->stage_ready = true;
 
 				for (int i = 0; i < ENEMY_MAX; i++)
@@ -1010,6 +1018,12 @@ void do_game_logic(void)
 				if (enemy[i].state == UnitState::move && enemy[i].pos_x < 750)
 					enemy[i].Unit_Move();
 
+				if (enemy[i].pos_x >= 750)
+				{
+					game_state = GameState::game_over;
+				}
+				
+
 				gm->active_enemy_unit_count++;
 			}
 
@@ -1017,13 +1031,6 @@ void do_game_logic(void)
 			{
 				if (Cat[i].state == UnitState::move && Cat[i].pos_x > 50)
 					Cat[i].Unit_Move();
-
-				//if (Cat[i].pos_x < 50)
-				//{
-				//	Cat[i].state = UnitState::die;
-				//	Cat[i].active = false;
-				//	Cat[i].pos_x = -100;
-				//}
 
 				gm->active_unit_count++;
 			}
@@ -1386,6 +1393,13 @@ void render_frame(void)
 			break;
 		case GameStage::stage2:
 
+			gm->victory_count++;
+
+			if (gm->victory_count <= 20)
+			{
+				Render_Draw(0, 0, 400, 200, 200, 200, sprite_victory);
+			}
+
 			for (int i = 0; i < ENEMY_MAX; i++)
 			{
 				switch (enemy[i].state)
@@ -1419,6 +1433,13 @@ void render_frame(void)
 			break;
 
 		case GameStage::stage3:
+
+			gm->victory_count++;
+
+			if (gm->victory_count <= 20)
+			{
+				Render_Draw(0, 0, 400, 200, 200, 200, sprite_victory);
+			}
 
 			for (int i = 0; i < ENEMY_MAX; i++)
 			{
@@ -1455,6 +1476,13 @@ void render_frame(void)
 
 		case GameStage::stage4:
 
+			gm->victory_count++;
+
+			if (gm->victory_count <= 20)
+			{
+				Render_Draw(0, 0, 400, 200, 200, 200, sprite_victory);
+			}
+
 			for (int i = 0; i < ENEMY_MAX; i++)
 			{
 				switch (enemy[i].state)
@@ -1489,6 +1517,14 @@ void render_frame(void)
 			break;
 
 		case GameStage::stage5:
+
+			gm->victory_count++;
+
+			if (gm->victory_count <= 20)
+			{
+				Render_Draw(0, 0, 400, 200, 200, 200, sprite_victory);
+			}
+
 			for (int i = 0; i < ENEMY_MAX; i++)
 			{
 				switch (enemy[i].state)
@@ -1523,6 +1559,14 @@ void render_frame(void)
 			break;
 
 		case GameStage::stage6:
+
+			gm->victory_count++;
+
+			if (gm->victory_count <= 20)
+			{
+				Render_Draw(0, 0, 400, 200, 200, 200, sprite_victory);
+			}
+
 			for (int i = 0; i < ENEMY_MAX; i++)
 			{
 				switch (enemy[i].state)
@@ -1558,6 +1602,13 @@ void render_frame(void)
 			break;
 
 		case GameStage::stage7:
+
+			gm->victory_count++;
+
+			if (gm->victory_count <= 20)
+			{
+				Render_Draw(0, 0, 400, 200, 200, 200, sprite_victory);
+			}
 
 			for (int i = 0; i < ENEMY_MAX; i++)
 			{
@@ -1595,6 +1646,32 @@ void render_frame(void)
 
 		//////////////////////////// 여기까지 ingame
 		break;
+
+		case GameState::game_over:
+			gm->ending_count++;
+			if (gm->ending_count <= 150)
+			{
+				Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_game_over);
+			}
+
+			else
+			{
+				exit(0);
+			}
+			break;
+		case GameState::game_ending:
+			gm->ending_count++;
+			if (gm->ending_count <= 150)
+			{
+				Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0,0,sprite_ending);
+			}
+
+			else
+			{
+				exit(0);
+			}
+			break;
+
 	}
 
 	}
@@ -1633,10 +1710,9 @@ void cleanD3D(void)
 	sprite_ui->Release();
 	sprite_ui_status->Release();
 
-	//sprite_victory->Release();
-	//sprite_ending->Release();
-	//sprite_start->Release();
-
+	sprite_victory->Release();
+	sprite_ending->Release();
+	sprite_game_over->Release();
 
 	//기지
 	sprite_base->Release();
