@@ -24,15 +24,6 @@ Enemy::~Enemy()
 
 }
 
-void Enemy::Enemy_Init()
-{
-	
-}
-
-void Enemy::Unit_Pos_Init(int pos_x_, int pos_y_)
-{
-}
-
 void Enemy::Unit_Move()
 {
 	pos_x = pos_x + move_speed;

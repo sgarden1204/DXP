@@ -23,11 +23,6 @@ Friend::~Friend()
 {
 }
 
-void Friend::Unit_Pos_Init(int pos_x_, int pos_y_)
-{
-
-}
-
 void Friend::Unit_Move()
 {
 	pos_x = pos_x - move_speed;

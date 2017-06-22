@@ -4,8 +4,8 @@ CommandCenter::CommandCenter()
 {
 	Fire = true;
 
-	Position_x = 650.0f;
-	Position_y = 130.0f;
+	Position_x = 650;
+	Position_y = 130;
 
 	Fire_Frame = 1;
 }
@@ -13,5 +13,5 @@ CommandCenter::CommandCenter()
 
 CommandCenter::~CommandCenter()
 {
-
+	 
 }

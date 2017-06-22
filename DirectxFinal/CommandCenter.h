@@ -8,10 +8,11 @@ public:
 	~CommandCenter();
 
 public:
+
 	bool Fire;
 
-	float Position_x;
-	float Position_y;
+	int Position_x;
+	int Position_y;
 
 	int Fire_Frame;
 

@@ -12,6 +12,7 @@
 #include"Enemy.h"
 
 // define the screen resolution and keyboard macros
+#pragma warning(disable:4996)
 #define SCREEN_WIDTH  800
 #define SCREEN_HEIGHT 600
 #define KEY_DOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
@@ -31,13 +32,7 @@
 LPDIRECT3D9 d3d;    // the pointer to our Direct3D interface
 LPDIRECT3DDEVICE9 d3ddev;    // the pointer to the device class
 LPD3DXSPRITE d3dspt;    // the pointer to our Direct3D Sprite interface
-LPDIRECTSOUNDBUFFER g_lpDSBG[2] = { NULL, };
-
-LPDIRECTSOUND g_lpDS = NULL;
-
-LPD3DXFONT font;
-
-						//스프라이트 선언
+LPD3DXFONT font; // 폰트 선언
 
 						//텍스쳐를 선언
 LPDIRECT3DTEXTURE9 sprite_start_menu;
@@ -101,6 +96,8 @@ LPDIRECT3DTEXTURE9 sprite_bear_move;
 LPDIRECT3DTEXTURE9 sprite_bear_dark_atk;
 LPDIRECT3DTEXTURE9 sprite_bear_dark_move;
 
+LPDIRECT3DTEXTURE9 sprite_bear_boss_move;
+
 void initD3D(HWND hWnd);    // sets up and initializes Direct3D
 void render_frame(void);    // renders a single frame
 void cleanD3D(void);		// closes Direct3D and releases memory
@@ -111,14 +108,10 @@ void do_game_logic(void);
 void Render_Draw(int x1, int y1, int x2, int y2, int pos_x, int pos_y, LPDIRECT3DTEXTURE9 name);
 void Create_Texture(LPCWSTR filename, LPDIRECT3DTEXTURE9  *sprite_name);
 
-bool sphere_collision_check(float x0, float y0, float size0, float x1, float y1, float size1);
-
 // the WindowProc function prototype
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-
 using namespace std;
-//////////////////////////////////////////////////
 
 enum UnitState : int
 {
@@ -145,6 +138,7 @@ enum EnemyType : int
 	dog = 1, snake, Udog, Usnake, bear,blackdog,blackbear
 };
 
+
 UnitState unit_state = UnitState::move;
 GameState game_state = GameState::start_menu;
 GameStage game_stage = GameStage::stage1;
@@ -152,43 +146,20 @@ FriendType friend_type;
 EnemyType enemy_type;
 
 
-CommandCenter CC;
+CommandCenter cc;
 Sound sound;
 GameManager * GameManager::instance = nullptr;
 GameManager * gm = GameManager::get_Instance();
 
-Friend Cat[FRIEND_MAX];
+Friend cat[FRIEND_MAX];
 Enemy enemy[ENEMY_MAX];
-
-//기본 클래스 
-class entity {
-
-};
-
-bool sphere_collision_check(float x0, float y0, float size0, float x1, float y1, float size1)
-{
-
-	if ((x0 - x1)*(x0 - x1) + (y0 - y1)*(y0 - y1) < (size0 + size1) * (size0 + size1))
-		return true;
-	else
-		return false;
-
-}
-
-bool Rect_collision_check(int left1, int top1, int right1, int bottom1, int left2, int top2, int right2, int bottom2)
-{
-	if (right2 >= left1 && right1 >= left2 && bottom2 >= top1 && bottom1 >= top2)
-		return true;
-	else
-		return false;
-}
 
 void Render_Draw(int x1,int y1,int x2, int y2,int pos_x,int pos_y,LPDIRECT3DTEXTURE9 name)
 {
 	RECT rect;
 	SetRect(&rect, x1, y1, x2, y2);
 	D3DXVECTOR3 rect_center(0.0f, 0.0f, 0.0f);    // center at the upper-left corner
-	D3DXVECTOR3 rect_position(pos_x, pos_y, 0.0f);    // position at 50, 50 with no depth
+	D3DXVECTOR3 rect_position((float)pos_x, (float)pos_y, 0.0f);    // position at 50, 50 with no depth
 	d3dspt->Draw(name, &rect, &rect_center, &rect_position, D3DCOLOR_ARGB(255, 255, 255, 255));
 }
 
@@ -230,14 +201,15 @@ void Play_Sound()
 	sound.PlayWave();
 }
 
-//주인공 클래스 
-
 // the entry point for any Windows program
 int WINAPI WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine,
 	int nCmdShow)
 {
+
+	lpCmdLine = lpCmdLine;
+	hPrevInstance = hPrevInstance;
 	HWND hWnd;
 	WNDCLASSEX wc;
 
@@ -332,8 +304,6 @@ void initD3D(HWND hWnd)
 	d3dpp.BackBufferHeight = SCREEN_HEIGHT;
 	//전체화면-> 창모드 설정
 
-	//사운드 초기화
-
 	// create a device class using this information and the info from the d3dpp stuct
 	d3d->CreateDevice(D3DADAPTER_DEFAULT,
 		D3DDEVTYPE_HAL,
@@ -342,10 +312,10 @@ void initD3D(HWND hWnd)
 		&d3dpp,
 		&d3ddev);
 
-
 	//폰트 크리에이트
 	Create_Font();
 
+	//사운드 초기화
 	sound.DSoundInit(hWnd);
 	sound.LoadWave(L"BGM1.wav");
 
@@ -443,6 +413,9 @@ void initD3D(HWND hWnd)
 	Create_Texture(L"Dark_Bear_Atk.png", &sprite_bear_dark_atk);
 	Create_Texture(L"Dark_Bear_Move.png", &sprite_bear_dark_move);
 
+	//Boss Bear
+	Create_Texture(L"Boss_Bear_Move.png", &sprite_bear_boss_move);
+
 	return;
 }
  
@@ -489,7 +462,7 @@ void do_game_logic(void)
 		gm->cool_down--;
 
 		//타입 버튼 1번 기본 캣
-		if (KEY_DOWN(0x31)) // basic_cat_setting & active
+		if (KEY_DOWN(0x31))
 		{
 			if (gm->cool_down < 0)
 			{
@@ -497,10 +470,10 @@ void do_game_logic(void)
 
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
-					if (Cat[i].active == false)
+					if (cat[i].active == false)
 					{
-						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x, CC.Position_y+240, 500, 5, 1, FriendType::basic);
+						cat[i].active = true;
+						cat[i].Unit_Init(cc.Position_x, cc.Position_y+240, 500, 5, 1, FriendType::basic);
 						gm->unit_count++;
 						break;
 						//Hp 500, ATK 5, SPD 1
@@ -510,7 +483,7 @@ void do_game_logic(void)
 		}
 
 		//타입 버튼 2번 탱크 캣
-		if (KEY_DOWN(0x32)) // basic_cat_setting & active
+		if (KEY_DOWN(0x32))
 		{
 			if (gm->cool_down < 0)
 			{
@@ -518,10 +491,10 @@ void do_game_logic(void)
 
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
-					if (Cat[i].active == false)
+					if (cat[i].active == false)
 					{
-						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x, CC.Position_y+180, 1500, 3, 1, FriendType::tank);
+						cat[i].active = true;
+						cat[i].Unit_Init(cc.Position_x, cc.Position_y+180, 1500, 3, 1, FriendType::tank);
 						gm->unit_count++;
 						break;
 						//Hp 1500, ATK 3, SPD 1
@@ -530,7 +503,7 @@ void do_game_logic(void)
 			}
 		}
 		//타입 버튼 3번 도끼 캣
-		if (KEY_DOWN(0x33)) // basic_cat_setting & active
+		if (KEY_DOWN(0x33))
 		{
 			if (gm->cool_down < 0)
 			{
@@ -538,10 +511,10 @@ void do_game_logic(void)
 
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
-					if (Cat[i].active == false)
+					if (cat[i].active == false)
 					{
-						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+220, 1000, 15, 1, FriendType::axe);
+						cat[i].active = true;
+						cat[i].Unit_Init(cc.Position_x-30, cc.Position_y+220, 1000, 15, 1, FriendType::axe);
 						gm->unit_count++;
 						break;
 						//Hp 10, ATK 15, SPD 1
@@ -559,10 +532,10 @@ void do_game_logic(void)
 
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
-					if (Cat[i].active == false)
+					if (cat[i].active == false)
 					{
-						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+220, 10, 1000, 2, FriendType::angle);
+						cat[i].active = true;
+						cat[i].Unit_Init(cc.Position_x-30, cc.Position_y+220, 10, 1000, 2, FriendType::angle);
 						gm->unit_count++;
 						break;
 						//Hp 10, ATK 500, SPD 2
@@ -580,10 +553,10 @@ void do_game_logic(void)
 
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
-					if (Cat[i].active == false)
+					if (cat[i].active == false)
 					{
-						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+200, 1000, 10, 3, FriendType::cow);
+						cat[i].active = true;
+						cat[i].Unit_Init(cc.Position_x-30, cc.Position_y+200, 1000, 10, 3, FriendType::cow);
 						gm->unit_count++;
 						break;
 						//Hp 1000, ATK 10, SPD 3
@@ -601,13 +574,13 @@ void do_game_logic(void)
 
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
-					if (Cat[i].active == false)
+					if (cat[i].active == false)
 					{
-						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+200, 1500, 10, 3, FriendType::hero);
+						cat[i].active = true;
+						cat[i].Unit_Init(cc.Position_x-30, cc.Position_y+200, 2000, 50, 3, FriendType::hero);
 						gm->unit_count++;
 						break;
-						//Hp 20, ATK 10, SPD 2
+						//Hp 2000, ATK 200, SPD 3
 					}
 				}
 			}
@@ -625,7 +598,7 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 1 + TEST_SPEED, EnemyType::snake);
+						enemy[i].Unit_Init((rand() % 1000) - 1000, cc.Position_y + 240, 500, 5, 1 + TEST_SPEED, EnemyType::snake);
 						//뱀 Hp 1000, Atk 5, Speed 1
 					}
 
@@ -654,8 +627,8 @@ void do_game_logic(void)
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
 					gm->unit_count = 0;
-					Cat[i].pos_x = 900;
-					Cat[i].active = false;
+					cat[i].pos_x = 900;
+					cat[i].active = false;
 				}
 			}
 
@@ -669,8 +642,8 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 1 + TEST_SPEED, EnemyType::dog);
-						//뱀 Hp 1000, Atk 5, Speed 1
+						enemy[i].Unit_Init((rand() % 1000) - 1000, cc.Position_y + 240, 2000, 3, 1 + TEST_SPEED, EnemyType::dog);
+						//개 Hp 2000, Atk 3, Speed 1
 					}
 
 					else
@@ -698,8 +671,8 @@ void do_game_logic(void)
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
 					gm->unit_count = 0;
-					Cat[i].pos_x = 900;
-					Cat[i].active = false;
+					cat[i].pos_x = 900;
+					cat[i].active = false;
 				}
 			}
 			break;
@@ -713,8 +686,8 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 215, 500, 5, 1 + TEST_SPEED, EnemyType::Usnake);
-						//뱀 Hp 1000, Atk 5, Speed 1
+						enemy[i].Unit_Init((rand() % 1000) - 1000, cc.Position_y + 215, 1500, 15, 1 + TEST_SPEED, EnemyType::Usnake);
+						//강화 뱀 Hp 1500, Atk 15, Speed 1
 					}
 
 					else
@@ -742,8 +715,8 @@ void do_game_logic(void)
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
 					gm->unit_count = 0;
-					Cat[i].pos_x = 900;
-					Cat[i].active = false;
+					cat[i].pos_x = 900;
+					cat[i].active = false;
 				}
 			}
 			break;
@@ -757,8 +730,8 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 215, 500, 5, 1 + TEST_SPEED, EnemyType::Udog);
-						//뱀 Hp 1000, Atk 5, Speed 1
+						enemy[i].Unit_Init((rand() % 1000) - 1000, cc.Position_y + 215, 2000, 20, 2 + TEST_SPEED, EnemyType::Udog);
+						//강화 개 Hp 2000, Atk 20, Speed 2
 					}
 
 					else
@@ -786,8 +759,8 @@ void do_game_logic(void)
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
 					gm->unit_count = 0;
-					Cat[i].pos_x = 900;
-					Cat[i].active = false;
+					cat[i].pos_x = 900;
+					cat[i].active = false;
 				}
 			}
 			break;
@@ -801,8 +774,8 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y +140, 500, 5, 1 + TEST_SPEED, EnemyType::snake);
-						//뱀 Hp 1000, Atk 5, Speed 1
+						enemy[i].Unit_Init((rand() % 1000) - 1000, cc.Position_y +140, 3000, 30, 1 + TEST_SPEED, EnemyType::bear);
+						//곰 Hp 3000, Atk 30, Speed 1
 					}
 
 					else
@@ -830,8 +803,8 @@ void do_game_logic(void)
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
 					gm->unit_count = 0;
-					Cat[i].pos_x = 900;
-					Cat[i].active = false;
+					cat[i].pos_x = 900;
+					cat[i].active = false;
 				}
 			}
 			break;
@@ -845,7 +818,7 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 200, 500, 5, 1 + TEST_SPEED, EnemyType::snake);
+						enemy[i].Unit_Init((rand() % 1000) - 1000, cc.Position_y + 200, 2500, 30, 3 + TEST_SPEED, EnemyType::blackdog);
 						//뱀 Hp 1000, Atk 5, Speed 1
 					}
 
@@ -874,8 +847,8 @@ void do_game_logic(void)
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
 					gm->unit_count = 0;
-					Cat[i].pos_x = 900;
-					Cat[i].active = false;
+					cat[i].pos_x = 900;
+					cat[i].active = false;
 				}
 			}
 			break;
@@ -887,10 +860,21 @@ void do_game_logic(void)
 				{
 					if (enemy[i].active == false)
 					{
-						enemy[i].active = true;
-						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 140, 500, 5, 1 + TEST_SPEED, EnemyType::snake);
-						//뱀 Hp 1000, Atk 5, Speed 1
+						if (i == ENEMY_MAX - 1)
+						{
+							// 보스곰
+							enemy[i].active = true;
+							enemy[i].state = UnitState::move;
+							enemy[i].Unit_Init(-2000, cc.Position_y-70, 10000, 100, 1 + TEST_SPEED, EnemyType::blackbear);
+						}
+
+						else
+						{
+							enemy[i].active = true;
+							enemy[i].state = UnitState::move;
+							enemy[i].Unit_Init((rand() % 1000) - 1000, cc.Position_y + 140, 3000, 100, 2 + TEST_SPEED, EnemyType::blackbear);
+							//검은 곰 Hp 4000, Atk 100, Speed 3
+						}
 					}
 
 					else
@@ -903,8 +887,6 @@ void do_game_logic(void)
 
 			if (gm->unit_enemy_count <= 0)
 			{
-				//game_stage = GameStage::stage7;
-				//gm->current_game_stage = 6; // UI 6개
 				game_state = GameState::game_ending;
 
 				gm->stage_ready = true;
@@ -919,13 +901,12 @@ void do_game_logic(void)
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
 					gm->unit_count = 0;
-					Cat[i].active = false;
-					Cat[i].pos_x = 900;
+					cat[i].active = false;
+					cat[i].pos_x = 900;
 				}
 			}
 			break;
 		}
-
 
 		//////////////////////////////////////////////스테이지 밖
 		for (int i = 0; i < FRIEND_MAX; i++)
@@ -934,18 +915,18 @@ void do_game_logic(void)
 			for (int j = 0; j < ENEMY_MAX; j++)
 			{
 
-					if (Cat[i].pos_x - enemy[j].pos_x <= 60)
+					if (cat[i].pos_x - enemy[j].pos_x <= 60)
 					{
-						Cat[i].hp -= enemy[j].atk_damage;
-						enemy[j].hp -= Cat[i].atk_damage;
-						Cat[i].state = UnitState::atk;
+						cat[i].hp -= enemy[j].atk_damage;
+						enemy[j].hp -= cat[i].atk_damage;
+						cat[i].state = UnitState::atk;
 						enemy[j].state = UnitState::atk;
 
-						if (Cat[i].hp <= 0)
+						if (cat[i].hp <= 0)
 						{
-							Cat[i].pos_x = 900;
-							Cat[i].active = false;
-							Cat[i].state = UnitState::die;
+							cat[i].pos_x = 900;
+							cat[i].active = false;
+							cat[i].state = UnitState::die;
 							enemy[j].state = UnitState::move;
 						}
 
@@ -954,10 +935,7 @@ void do_game_logic(void)
 							enemy[j].state = UnitState::die;
 							enemy[j].active = false;
 							enemy[j].pos_x = -100;
-							Cat[i].state = UnitState::move;
-							//gm->unit_enemy_count--;
-							//if (gm->unit_enemy_count <= 0)
-							//	gm->unit_enemy_count = 0;
+							cat[i].state = UnitState::move;
 						}
 
 						break;
@@ -965,7 +943,7 @@ void do_game_logic(void)
 
 					else
 					{
-						Cat[i].state = UnitState::move;
+						cat[i].state = UnitState::move;
 					}
 
 			}
@@ -973,26 +951,26 @@ void do_game_logic(void)
 			for (int j = 0; j < FRIEND_MAX; j++)
 			{
 
-				if (-enemy[i].pos_x + Cat[j].pos_x <= 60)
+				if (-enemy[i].pos_x + cat[j].pos_x <= 60)
 				{
-					enemy[i].hp -= Cat[j].atk_damage;
-					Cat[j].hp -= enemy[i].atk_damage;
+					enemy[i].hp -= cat[j].atk_damage;
+					cat[j].hp -= enemy[i].atk_damage;
 					enemy[i].state = UnitState::atk;
-					Cat[j].state = UnitState::atk;
+					cat[j].state = UnitState::atk;
 
 					if (enemy[i].hp <= 0)
 					{
 						enemy[i].pos_x = 900;
 						enemy[i].active = false;
 						enemy[i].state = UnitState::die;
-						Cat[j].state = UnitState::move;
+						cat[j].state = UnitState::move;
 					}
 
-					if (Cat[j].hp <= 0)
+					if (cat[j].hp <= 0)
 					{
-						Cat[j].state = UnitState::die;
-						Cat[j].active = false;
-						Cat[j].pos_x = -100;
+						cat[j].state = UnitState::die;
+						cat[j].active = false;
+						cat[j].pos_x = -100;
 						enemy[i].state = UnitState::move;
 					}
 
@@ -1027,10 +1005,10 @@ void do_game_logic(void)
 				gm->active_enemy_unit_count++;
 			}
 
-			if (Cat[i].active == true)
+			if (cat[i].active == true)
 			{
-				if (Cat[i].state == UnitState::move && Cat[i].pos_x > 50)
-					Cat[i].Unit_Move();
+				if (cat[i].state == UnitState::move && cat[i].pos_x > 50)
+					cat[i].Unit_Move();
 
 				gm->active_unit_count++;
 			}
@@ -1046,7 +1024,7 @@ void do_game_logic(void)
 		{
 			if (gm->energy_percent == 100)
 			{
-				CC.Fire = false;
+				cc.Fire = false;
 				gm->energy_percent = 0;
 
 				for (int i = 0; i < ENEMY_MAX; i++)
@@ -1060,8 +1038,6 @@ void do_game_logic(void)
 							enemy[i].active = false;
 							enemy[i].state = die;
 							enemy[i].pos_x = -100;
-
-							//gm->unit_enemy_count--;
 						}
 					}
 				}
@@ -1166,20 +1142,20 @@ void render_frame(void)
 				gm->energy_percent = 100;
 		}
 
-		if (CC.Fire == false)
+		if (cc.Fire == false)
 		{
 			//베이스 기지 공격
-			Render_Draw(0, 0, 150, 300, CC.Position_x, CC.Position_y, sprite_base_attack);
+			Render_Draw(0, 0, 150, 300, cc.Position_x, cc.Position_y, sprite_base_attack);
 
 			//베이스 기지 레이저 발사 공격
-			Render_Draw(70 * (CC.Fire_Frame - 1 / 10), 0, 70 * (CC.Fire_Frame / 10), 120, CC.Position_x - (85 * CC.Fire_Frame) / 10, CC.Position_y + 175, sprite_base_shoot);
+			Render_Draw(70 * (cc.Fire_Frame - 1 / 10), 0, 70 * (cc.Fire_Frame / 10), 120, cc.Position_x - (85 * cc.Fire_Frame) / 10, cc.Position_y + 175, sprite_base_shoot);
 
-			CC.Fire_Frame++;
+			cc.Fire_Frame++;
 
-			if (CC.Fire_Frame == 20)
+			if (cc.Fire_Frame == 20)
 			{
-				CC.Fire_Frame = 0;
-				CC.Fire = true;
+				cc.Fire_Frame = 0;
+				cc.Fire = true;
 			}
 
 		}
@@ -1187,163 +1163,163 @@ void render_frame(void)
 		else // base_attack false;
 		{
 			//베이스 기지 일반
-			Render_Draw(0, 0, 150, 300, CC.Position_x, CC.Position_y, sprite_base);
+			Render_Draw(0, 0, 150, 300, cc.Position_x, cc.Position_y, sprite_base);
 		}
 
 		//타입별 드로우
 		for (int i = 0; i < FRIEND_MAX; i++)
 		{
-			if (Cat[i].active == true)
+			if (cat[i].active == true)
 			{
 
-				switch(Cat[i].type)
+				switch(cat[i].type)
 				{ 
 				case FriendType::basic: // 베이직 캣 타입
 
-					switch (Cat[i].state)
+					switch (cat[i].state)
 					{
 					case UnitState::move:
-						Render_Draw(50 * (Cat[i].frame / 5), 0, 50 * ((Cat[i].frame / 5) + 1), 60, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_basic_move);
+						Render_Draw(50 * (cat[i].frame / 5), 0, 50 * ((cat[i].frame / 5) + 1), 60, cat[i].pos_x, cat[i].pos_y, sprite_cat_basic_move);
 
-						Cat[i].frame++;
+						cat[i].frame++;
 
-						if (Cat[i].frame >= 15)
-							Cat[i].frame = 0;
+						if (cat[i].frame >= 15)
+							cat[i].frame = 0;
 						break;
 					case UnitState::atk:
-						Render_Draw(50 * (Cat[i].frame / 5), 0, 50 * ((Cat[i].frame / 5) + 1), 60, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_basic_atk);
+						Render_Draw(50 * (cat[i].frame / 5), 0, 50 * ((cat[i].frame / 5) + 1), 60, cat[i].pos_x, cat[i].pos_y, sprite_cat_basic_atk);
 
-						Cat[i].frame++;
+						cat[i].frame++;
 
-						if (Cat[i].frame >= 20)
-							Cat[i].frame = 0;
+						if (cat[i].frame >= 20)
+							cat[i].frame = 0;
 						break;
 					case UnitState::die:
-						Cat[i].active == false;
+						cat[i].active = false;
 						break;
 					}
 
 					break;
 				case FriendType::tank: // 탱크 캣 타입
-					switch (Cat[i].state)
+					switch (cat[i].state)
 					{
 						case UnitState::move:
-							Render_Draw(50 * (Cat[i].frame / 5), 0, 50 * ((Cat[i].frame / 5) + 1), 120, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_tank_move);
+							Render_Draw(50 * (cat[i].frame / 5), 0, 50 * ((cat[i].frame / 5) + 1), 120, cat[i].pos_x, cat[i].pos_y, sprite_cat_tank_move);
 
-							Cat[i].frame++;
+							cat[i].frame++;
 
-							if (Cat[i].frame >= 15)
-								Cat[i].frame = 0;
+							if (cat[i].frame >= 15)
+								cat[i].frame = 0;
 							break;
 						case UnitState::atk:
-							Render_Draw(100 * (Cat[i].frame / 5), 0, 100 * ((Cat[i].frame / 5) + 1), 120, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_tank_atk);
+							Render_Draw(100 * (cat[i].frame / 5), 0, 100 * ((cat[i].frame / 5) + 1), 120, cat[i].pos_x, cat[i].pos_y, sprite_cat_tank_atk);
 
-							Cat[i].frame++;
+							cat[i].frame++;
 
-							if (Cat[i].frame >= 20)
-								Cat[i].frame = 0;
+							if (cat[i].frame >= 20)
+								cat[i].frame = 0;
 							break;
 						case UnitState::die:
-							Cat[i].active == false;
+							cat[i].active = false;
 							break;
 					}
 					break;
 				case FriendType::axe: // 액스 캣 타입
-					switch (Cat[i].state)
+					switch (cat[i].state)
 					{
 					case UnitState::move:
-						Render_Draw(100 * (Cat[i].frame / 5), 0, 100 * ((Cat[i].frame / 5) + 1), 80, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_axe_move);
+						Render_Draw(100 * (cat[i].frame / 5), 0, 100 * ((cat[i].frame / 5) + 1), 80, cat[i].pos_x, cat[i].pos_y, sprite_cat_axe_move);
 
-						Cat[i].frame++;
+						cat[i].frame++;
 
-						if (Cat[i].frame >= 15)
-							Cat[i].frame = 0;
+						if (cat[i].frame >= 15)
+							cat[i].frame = 0;
 
 						break;
 					case UnitState::atk:
-						Render_Draw(120 * (Cat[i].frame / 5), 0, 120 * ((Cat[i].frame / 5) + 1), 80, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_axe_atk);
+						Render_Draw(120 * (cat[i].frame / 5), 0, 120 * ((cat[i].frame / 5) + 1), 80, cat[i].pos_x, cat[i].pos_y, sprite_cat_axe_atk);
 
-						Cat[i].frame++;
+						cat[i].frame++;
 
-						if (Cat[i].frame >= 20)
-							Cat[i].frame = 0;
+						if (cat[i].frame >= 20)
+							cat[i].frame = 0;
 
 						break;
 					case UnitState::die:
-						Cat[i].active == false;
+						cat[i].active = false;
 						break;
 					}
 					break;
 				case FriendType::angle: // 엔젤 캣 타입
-					switch (Cat[i].state)
+					switch (cat[i].state)
 					{
 					case UnitState::move:
-						Render_Draw(125 * (Cat[i].frame / 5), 0, 125 * ((Cat[i].frame / 5) + 1), 75, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_angle_move);
+						Render_Draw(125 * (cat[i].frame / 5), 0, 125 * ((cat[i].frame / 5) + 1), 75, cat[i].pos_x, cat[i].pos_y, sprite_cat_angle_move);
 
-						Cat[i].frame++;
+						cat[i].frame++;
 
-						if (Cat[i].frame >= 20)
-							Cat[i].frame = 0;
+						if (cat[i].frame >= 20)
+							cat[i].frame = 0;
 						break;
 					case UnitState::atk:
-						Render_Draw(125 * (Cat[i].frame / 5), 0, 125 * ((Cat[i].frame / 5) + 1), 75, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_angle_move);
+						Render_Draw(125 * (cat[i].frame / 5), 0, 125 * ((cat[i].frame / 5) + 1), 75, cat[i].pos_x, cat[i].pos_y, sprite_cat_angle_move);
 
-						Cat[i].frame++;
+						cat[i].frame++;
 
-						if (Cat[i].frame >= 20)
-							Cat[i].frame = 0;
+						if (cat[i].frame >= 20)
+							cat[i].frame = 0;
 						break;
 					case UnitState::die:
-						Cat[i].active == false;
+						cat[i].active = false;
 						break;
 					}
 					break;
 				case FriendType::cow: // 카우 캣 타입
-					switch (Cat[i].state)
+					switch (cat[i].state)
 					{
 					case UnitState::move:
-						Render_Draw(100 * (Cat[i].frame / 5), 0, 100 * ((Cat[i].frame / 5) + 1), 100, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_cow_move);
+						Render_Draw(100 * (cat[i].frame / 5), 0, 100 * ((cat[i].frame / 5) + 1), 100, cat[i].pos_x, cat[i].pos_y, sprite_cat_cow_move);
 
-						Cat[i].frame++;
+						cat[i].frame++;
 
-						if (Cat[i].frame >= 20)
-							Cat[i].frame = 0;
+						if (cat[i].frame >= 20)
+							cat[i].frame = 0;
 						break;
 					case UnitState::atk:
-						Render_Draw(150 * (Cat[i].frame / 5), 0, 150 * ((Cat[i].frame / 5) + 1), 100, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_cow_atk);
+						Render_Draw(150 * (cat[i].frame / 5), 0, 150 * ((cat[i].frame / 5) + 1), 100, cat[i].pos_x, cat[i].pos_y, sprite_cat_cow_atk);
 
-						Cat[i].frame++;
+						cat[i].frame++;
 
-						if (Cat[i].frame >= 20)
-							Cat[i].frame = 0;
+						if (cat[i].frame >= 20)
+							cat[i].frame = 0;
 
 						break;
 					case UnitState::die:
-						Cat[i].active == false;
+						cat[i].active = false;
 						break;
 					}
 					break;
 				case FriendType::hero: // 히어로 캣 타입
-					switch (Cat[i].state)
+					switch (cat[i].state)
 					{
 					case UnitState::move:
-						Render_Draw(100 * (Cat[i].frame / 5), 0, 100 * ((Cat[i].frame / 5) + 1), 100, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_hero_move);
+						Render_Draw(100 * (cat[i].frame / 5), 0, 100 * ((cat[i].frame / 5) + 1), 100, cat[i].pos_x, cat[i].pos_y, sprite_cat_hero_move);
 
-						Cat[i].frame++;
+						cat[i].frame++;
 
-						if (Cat[i].frame >= 15)
-							Cat[i].frame = 0;
+						if (cat[i].frame >= 15)
+							cat[i].frame = 0;
 						break;
 					case UnitState::atk:
-						Render_Draw(150 * (Cat[i].frame / 5), 0, 150 * ((Cat[i].frame / 5) + 1), 100, Cat[i].pos_x, Cat[i].pos_y, sprite_cat_hero_atk);
+						Render_Draw(150 * (cat[i].frame / 5), 0, 150 * ((cat[i].frame / 5) + 1), 100, cat[i].pos_x, cat[i].pos_y, sprite_cat_hero_atk);
 
-						Cat[i].frame++;
+						cat[i].frame++;
 
-						if (Cat[i].frame >= 20)
-							Cat[i].frame = 0;
+						if (cat[i].frame >= 20)
+							cat[i].frame = 0;
 						break;
 					case UnitState::die:
-						Cat[i].active == false;
+						cat[i].active = false;
 						break;
 					}
 					break;
@@ -1615,23 +1591,54 @@ void render_frame(void)
 				switch (enemy[i].state)
 				{
 				case UnitState::move:
-					Render_Draw(100 * (enemy[i].frame / 5), 0, 100 * ((enemy[i].frame / 5) + 1), 150, enemy[i].pos_x, enemy[i].pos_y, sprite_bear_dark_move);
 
-					enemy[i].frame++;
-
-					if (enemy[i].frame >= 30)
+					if (i == ENEMY_MAX - 1)
 					{
-						enemy[i].frame = 0;
+						Render_Draw(200 * (enemy[i].frame / 5), 0, 200 * ((enemy[i].frame / 5) + 1), 400, enemy[i].pos_x, enemy[i].pos_y, sprite_bear_boss_move);
+					
+						enemy[i].frame++;
+
+						if (enemy[i].frame >= 30)
+						{
+							enemy[i].frame = 0;
+						}
+					}
+
+					else
+					{
+						Render_Draw(100 * (enemy[i].frame / 5), 0, 100 * ((enemy[i].frame / 5) + 1), 150, enemy[i].pos_x, enemy[i].pos_y, sprite_bear_dark_move);
+
+						enemy[i].frame++;
+
+						if (enemy[i].frame >= 30)
+						{
+							enemy[i].frame = 0;
+						}
 					}
 					break;
 				case UnitState::atk:
-					Render_Draw(150 * (enemy[i].frame / 5), 0, 150 * ((enemy[i].frame / 5) + 1), 200, enemy[i].pos_x, enemy[i].pos_y, sprite_bear_dark_atk);
-
-					enemy[i].frame++;
-
-					if (enemy[i].frame >= 20)
+					if (i == ENEMY_MAX - 1)
 					{
-						enemy[i].frame = 0;
+						Render_Draw(200 * (enemy[i].frame / 5), 0, 200 * ((enemy[i].frame / 5) + 1), 400, enemy[i].pos_x, enemy[i].pos_y, sprite_bear_boss_move);
+
+						enemy[i].frame++;
+
+						if (enemy[i].frame >= 30)
+						{
+							enemy[i].frame = 0;
+						}
+					}
+
+					else
+					{
+						Render_Draw(150 * (enemy[i].frame / 5), 0, 150 * ((enemy[i].frame / 5) + 1), 200, enemy[i].pos_x, enemy[i].pos_y, sprite_bear_dark_atk);
+
+						enemy[i].frame++;
+
+						if (enemy[i].frame >= 20)
+						{
+							enemy[i].frame = 0;
+						}
 					}
 					break;
 				case UnitState::die:
@@ -1647,7 +1654,7 @@ void render_frame(void)
 		//////////////////////////// 여기까지 ingame
 		break;
 
-		case GameState::game_over:
+		case GameState::game_over: // 게임 오버
 			gm->ending_count++;
 			if (gm->ending_count <= 150)
 			{
@@ -1659,7 +1666,7 @@ void render_frame(void)
 				exit(0);
 			}
 			break;
-		case GameState::game_ending:
+		case GameState::game_ending: // 게임 엔딩
 			gm->ending_count++;
 			if (gm->ending_count <= 150)
 			{
@@ -1693,12 +1700,13 @@ void cleanD3D(void)
 	d3ddev->Release();
 	d3d->Release();
 
-	//잡다한것
+	//메뉴
 	sprite_start_menu->Release();
 	sprite_end_menu->Release();
 
 	sprite_story->Release();
 
+	//스테이지
 	sprite_background_stage1->Release();
 	sprite_background_stage2->Release();
 	sprite_background_stage3->Release();
@@ -1707,9 +1715,11 @@ void cleanD3D(void)
 	sprite_background_stage6->Release();
 	sprite_background_stage7->Release();
 
+	//UI
 	sprite_ui->Release();
 	sprite_ui_status->Release();
 
+	//엔딩 & 오버
 	sprite_victory->Release();
 	sprite_ending->Release();
 	sprite_game_over->Release();
@@ -1761,6 +1771,9 @@ void cleanD3D(void)
 	sprite_bear_dark_atk->Release();
 	sprite_bear_dark_move->Release();
 
+	sprite_bear_boss_move->Release();
+
+	//사운드 및 폰트
 	sound.ReleaseDSound();
 	font->Release();
 
