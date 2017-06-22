@@ -28,6 +28,15 @@ public:
 
 public:
 
+	bool victory;
+	bool start;
+
+	int ready_frame;
+
+	bool stage_ready;
+	bool stage_start;
+	bool stage_end;
+
 	int  cool_down;
 
 	int wait_count;

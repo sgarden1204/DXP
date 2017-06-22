@@ -1,27 +1,35 @@
 ﻿  DirectxFinal.cpp
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(161): warning C4244: '인수': 'int'에서 'FLOAT'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(208): warning C4100: 'lpCmdLine': 참조되지 않은 정식 매개 변수입니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(207): warning C4100: 'hPrevInstance': 참조되지 않은 정식 매개 변수입니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(439): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(459): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(478): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(498): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(518): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(538): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(558): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(753): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(756): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(771): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(803): warning C4553: '==': 의미 없는 연산자입니다. '='을(를) 사용하려고 했습니까?
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(828): warning C4553: '==': 의미 없는 연산자입니다. '='을(를) 사용하려고 했습니까?
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(854): warning C4553: '==': 의미 없는 연산자입니다. '='을(를) 사용하려고 했습니까?
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(878): warning C4553: '==': 의미 없는 연산자입니다. '='을(를) 사용하려고 했습니까?
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(903): warning C4553: '==': 의미 없는 연산자입니다. '='을(를) 사용하려고 했습니까?
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(927): warning C4553: '==': 의미 없는 연산자입니다. '='을(를) 사용하려고 했습니까?
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(731): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(181): warning C4244: '인수': 'int'에서 'FLOAT'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(228): warning C4100: 'lpCmdLine': 참조되지 않은 정식 매개 변수입니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(227): warning C4100: 'hPrevInstance': 참조되지 않은 정식 매개 변수입니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(488): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(508): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(527): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(547): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(567): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(587): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(607): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(646): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(685): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(724): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(763): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(802): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(841): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(1059): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(1062): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(1077): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(1109): warning C4553: '==': 의미 없는 연산자입니다. '='을(를) 사용하려고 했습니까?
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(1134): warning C4553: '==': 의미 없는 연산자입니다. '='을(를) 사용하려고 했습니까?
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(1160): warning C4553: '==': 의미 없는 연산자입니다. '='을(를) 사용하려고 했습니까?
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(1184): warning C4553: '==': 의미 없는 연산자입니다. '='을(를) 사용하려고 했습니까?
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(1209): warning C4553: '==': 의미 없는 연산자입니다. '='을(를) 사용하려고 했습니까?
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(1233): warning C4553: '==': 의미 없는 연산자입니다. '='을(를) 사용하려고 했습니까?
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(1037): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 'sprintf' 선언을 참조하십시오.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(734): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(1040): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 'sprintf' 선언을 참조하십시오.
-c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(737): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+c:\users\user\desktop\dxp\directxfinal\directxfinal.cpp(1043): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdio.h(1769): note: 'sprintf' 선언을 참조하십시오.
+  GameManager.cpp
+  코드를 생성하고 있습니다...
   DirectxFinal_2010.vcxproj -> C:\Users\user\Desktop\DXP\DirectxFinal\Debug\DirectxFinal.exe

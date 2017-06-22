@@ -35,8 +35,8 @@ void Friend::Unit_Move()
 
 void Friend::Unit_Init(int pos_x_, int pos_y_, int hp_, int atk_damage_, int move_speed_,int type_)
 {
-	pos_x = pos_x_ -  30;
-	pos_y = pos_y_ + 240;
+	pos_x = pos_x_;
+	pos_y = pos_y_;
 
 	hp = hp_;
 	atk_damage = atk_damage_;

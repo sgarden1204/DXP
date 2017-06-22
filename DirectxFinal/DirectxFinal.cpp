@@ -45,6 +45,9 @@ LPDIRECT3DTEXTURE9 sprite_story;
 LPDIRECT3DTEXTURE9 sprite_background;
 LPDIRECT3DTEXTURE9 sprite_ui;
 LPDIRECT3DTEXTURE9 sprite_ui_status;
+LPDIRECT3DTEXTURE9 sprite_victory;
+LPDIRECT3DTEXTURE9 sprite_start;
+LPDIRECT3DTEXTURE9 sprite_ending;
 
 LPDIRECT3DTEXTURE9 sprite_base;
 LPDIRECT3DTEXTURE9 sprite_base_attack;
@@ -69,6 +72,24 @@ LPDIRECT3DTEXTURE9 sprite_cat_hero_move;
 
 LPDIRECT3DTEXTURE9 sprite_snake_atk;
 LPDIRECT3DTEXTURE9 sprite_snake_move;
+
+LPDIRECT3DTEXTURE9 sprite_usnake_atk;
+LPDIRECT3DTEXTURE9 sprite_usnake_move;
+
+LPDIRECT3DTEXTURE9 sprite_dog_atk;
+LPDIRECT3DTEXTURE9 sprite_dog_move;
+
+LPDIRECT3DTEXTURE9 sprite_udog_atk;
+LPDIRECT3DTEXTURE9 sprite_udog_move;
+
+LPDIRECT3DTEXTURE9 sprite_dog_dark_atk;
+LPDIRECT3DTEXTURE9 sprite_dog_dark_move;
+
+LPDIRECT3DTEXTURE9 sprite_bear_atk;
+LPDIRECT3DTEXTURE9 sprite_bear_move;
+
+LPDIRECT3DTEXTURE9 sprite_bear_dark_atk;
+LPDIRECT3DTEXTURE9 sprite_bear_dark_move;
 
 void initD3D(HWND hWnd);    // sets up and initializes Direct3D
 void render_frame(void);    // renders a single frame
@@ -129,7 +150,6 @@ GameManager * gm = GameManager::get_Instance();
 Friend Cat[FRIEND_MAX];
 Enemy enemy[ENEMY_MAX];
 
-bool Test = true;
 //±âº» Å¬·¡½º 
 class entity {
 
@@ -336,6 +356,11 @@ void initD3D(HWND hWnd)
 	// ¹é±×¶ó¿îµå
 	Create_Texture(L"BackGround.png", &sprite_background);
 
+	// ½Â¸®, ÁØºñ
+	Create_Texture(L"Victory.png", &sprite_victory);
+	Create_Texture(L"Start.png", &sprite_start);
+	Create_Texture(L"Ending.png", &sprite_ending);
+
 		// UI
 	Create_Texture(L"UI.png", &sprite_ui);
 
@@ -377,6 +402,30 @@ void initD3D(HWND hWnd)
 	//Snake
 	Create_Texture(L"Snake_Atk.png", &sprite_snake_atk);
 	Create_Texture(L"Snake_Move.png", &sprite_snake_move);
+
+	//Upgrade Snake
+	Create_Texture(L"USnake_Atk.png", &sprite_usnake_atk);
+	Create_Texture(L"USnake_Move.png", &sprite_usnake_move);
+
+	//Dog
+	Create_Texture(L"Dog_Atk.png", &sprite_dog_atk);
+	Create_Texture(L"Dog_Move.png", &sprite_dog_move);
+
+	//Upgrede Dog
+	Create_Texture(L"UDog_Atk.png", &sprite_udog_atk);
+	Create_Texture(L"UDog_Move.png", &sprite_udog_move);
+
+	//Dark Dog
+	Create_Texture(L"Dark_Dog_Atk.png", &sprite_dog_dark_atk);
+	Create_Texture(L"Dark_Dog_Move.png", &sprite_dog_dark_move);
+
+	//Bear
+	Create_Texture(L"Bear_Atk.png", &sprite_bear_atk);
+	Create_Texture(L"Bear_Move.png", &sprite_bear_move);
+
+	//Dark Bear
+	Create_Texture(L"Dark_Bear_Atk.png", &sprite_bear_dark_atk);
+	Create_Texture(L"Dark_Bear_Move.png", &sprite_bear_dark_move);
 
 	return;
 }
@@ -436,7 +485,7 @@ void do_game_logic(void)
 					{
 						Cat[i].active = true;
 						Cat[i].state = UnitState::move;
-						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 500, 5, 1, FriendType::basic);
+						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+240, 500, 5, 1, FriendType::basic);
 						break;
 						//Hp 500, ATK 5, SPD 1
 					}
@@ -456,7 +505,7 @@ void do_game_logic(void)
 					if (Cat[i].active == false)
 					{
 						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 1500, 3, 1, FriendType::tank);
+						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+180, 1500, 3, 1, FriendType::tank);
 						break;
 						//Hp 1500, ATK 3, SPD 1
 					}
@@ -475,7 +524,7 @@ void do_game_logic(void)
 					if (Cat[i].active == false)
 					{
 						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 1000, 15, 1, FriendType::axe);
+						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+220, 1000, 15, 1, FriendType::axe);
 						break;
 						//Hp 10, ATK 15, SPD 1
 					}
@@ -495,7 +544,7 @@ void do_game_logic(void)
 					if (Cat[i].active == false)
 					{
 						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 10, 1000, 2, FriendType::angle);
+						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+220, 10, 1000, 2, FriendType::angle);
 						break;
 						//Hp 10, ATK 500, SPD 2
 					}
@@ -515,7 +564,7 @@ void do_game_logic(void)
 					if (Cat[i].active == false)
 					{
 						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 1000, 10, 3, FriendType::cow);
+						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+200, 1000, 10, 3, FriendType::cow);
 						break;
 						//Hp 1000, ATK 10, SPD 3
 					}
@@ -535,7 +584,7 @@ void do_game_logic(void)
 					if (Cat[i].active == false)
 					{
 						Cat[i].active = true;
-						Cat[i].Unit_Init(CC.Position_x, CC.Position_y, 1500, 100, 3, FriendType::hero);
+						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+200, 1500, 10, 3, FriendType::hero);
 						break;
 						//Hp 20, ATK 10, SPD 2
 					}
@@ -547,7 +596,7 @@ void do_game_logic(void)
 		{
 		case GameStage::stage1:
 
-			if (Test)
+			if (gm->stage_ready)
 			{
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
@@ -555,22 +604,273 @@ void do_game_logic(void)
 					{
 						enemy[i].active = true;
 						enemy[i].state = UnitState::move;
-						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 1, EnemyType::snake);
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::snake);
 						//¹ì Hp 1000, Atk 5, Speed 1
 					}
 
 					else
 						continue;
 
+					gm->unit_enemy_count = ENEMY_MAX;
 				}
-				Test = false;
+				gm->stage_ready = false;
 			}
+
+			if (gm->unit_enemy_count <= 0)
+			{
+				game_stage = GameStage::stage2;
+				gm->current_game_stage++;
+				gm->stage_ready = true;
+
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					enemy[i].active = false;
+				}
+
+				for (int i = 0; i < FRIEND_MAX; i++)
+				{
+					Cat[i].active = false;
+				}
+			}
+
 			break;
 		case GameStage::stage2:
+			if (gm->stage_ready)
+			{
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					if (enemy[i].active == false)
+					{
+						enemy[i].active = true;
+						enemy[i].state = UnitState::move;
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::dog);
+						//¹ì Hp 1000, Atk 5, Speed 1
+					}
 
+					else
+						continue;
+
+					gm->unit_enemy_count = ENEMY_MAX;
+				}
+				gm->stage_ready = false;
+			}
+
+			if (gm->unit_enemy_count <= 0)
+			{
+				game_stage = GameStage::stage3;
+				gm->current_game_stage++;
+				gm->stage_ready = true;
+
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					enemy[i].active = false;
+				}
+
+				for (int i = 0; i < FRIEND_MAX; i++)
+				{
+					Cat[i].active = false;
+				}
+			}
+			break;
+
+		case GameStage::stage3:
+			if (gm->stage_ready)
+			{
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					if (enemy[i].active == false)
+					{
+						enemy[i].active = true;
+						enemy[i].state = UnitState::move;
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::snake);
+						//¹ì Hp 1000, Atk 5, Speed 1
+					}
+
+					else
+						continue;
+
+					gm->unit_enemy_count = ENEMY_MAX;
+				}
+				gm->stage_ready = false;
+			}
+
+			if (gm->unit_enemy_count <= 0)
+			{
+				game_stage = GameStage::stage4;
+				gm->current_game_stage++;
+				gm->stage_ready = true;
+
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					enemy[i].active = false;
+				}
+
+				for (int i = 0; i < FRIEND_MAX; i++)
+				{
+					Cat[i].active = false;
+				}
+			}
+			break;
+
+		case GameStage::stage4:
+			if (gm->stage_ready)
+			{
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					if (enemy[i].active == false)
+					{
+						enemy[i].active = true;
+						enemy[i].state = UnitState::move;
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::snake);
+						//¹ì Hp 1000, Atk 5, Speed 1
+					}
+
+					else
+						continue;
+
+					gm->unit_enemy_count = ENEMY_MAX;
+				}
+				gm->stage_ready = false;
+			}
+
+			if (gm->unit_enemy_count <= 0)
+			{
+				game_stage = GameStage::stage5;
+				gm->current_game_stage++;
+				gm->stage_ready = true;
+
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					enemy[i].active = false;
+				}
+
+				for (int i = 0; i < FRIEND_MAX; i++)
+				{
+					Cat[i].active = false;
+				}
+			}
+			break;
+
+		case GameStage::stage5:
+			if (gm->stage_ready)
+			{
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					if (enemy[i].active == false)
+					{
+						enemy[i].active = true;
+						enemy[i].state = UnitState::move;
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::snake);
+						//¹ì Hp 1000, Atk 5, Speed 1
+					}
+
+					else
+						continue;
+
+					gm->unit_enemy_count = ENEMY_MAX;
+				}
+				gm->stage_ready = false;
+			}
+
+			if (gm->unit_enemy_count <= 0)
+			{
+				game_stage = GameStage::stage6;
+				gm->current_game_stage++;
+				gm->stage_ready = true;
+
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					enemy[i].active = false;
+				}
+
+				for (int i = 0; i < FRIEND_MAX; i++)
+				{
+					Cat[i].active = false;
+				}
+			}
+			break;
+
+		case GameStage::stage6:
+			if (gm->stage_ready)
+			{
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					if (enemy[i].active == false)
+					{
+						enemy[i].active = true;
+						enemy[i].state = UnitState::move;
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::snake);
+						//¹ì Hp 1000, Atk 5, Speed 1
+					}
+
+					else
+						continue;
+
+					gm->unit_enemy_count = ENEMY_MAX;
+				}
+				gm->stage_ready = false;
+			}
+
+			if (gm->unit_enemy_count <= 0)
+			{
+				game_stage = GameStage::stage7;
+				gm->current_game_stage++;
+				gm->stage_ready = true;
+
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					enemy[i].active = false;
+				}
+
+				for (int i = 0; i < FRIEND_MAX; i++)
+				{
+					Cat[i].active = false;
+				}
+			}
+			break;
+
+		case GameStage::stage7:
+			if (gm->stage_ready)
+			{
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					if (enemy[i].active == false)
+					{
+						enemy[i].active = true;
+						enemy[i].state = UnitState::move;
+						enemy[i].Unit_Init((rand() % 1000) - 1000, CC.Position_y + 240, 500, 5, 5, EnemyType::snake);
+						//¹ì Hp 1000, Atk 5, Speed 1
+					}
+
+					else
+						continue;
+
+					gm->unit_enemy_count = ENEMY_MAX;
+				}
+				gm->stage_ready = false;
+			}
+
+			if (gm->unit_enemy_count <= 0)
+			{
+				game_stage = GameStage::stage7;
+				gm->current_game_stage = 7;
+				gm->stage_ready = true;
+
+				for (int i = 0; i < ENEMY_MAX; i++)
+				{
+					enemy[i].active = false;
+				}
+
+				for (int i = 0; i < FRIEND_MAX; i++)
+				{
+					Cat[i].active = false;
+				}
+			}
 			break;
 		}
 
+
+		//////////////////////////////////////////////½ºÅ×ÀÌÁö ¹Û
 		for (int i = 0; i < FRIEND_MAX; i++)
 		{
 
@@ -598,6 +898,7 @@ void do_game_logic(void)
 							enemy[j].active = false;
 							enemy[j].pos_x = -100;
 							Cat[i].state = UnitState::move;
+							gm->unit_enemy_count--;
 						}
 
 						break;
@@ -652,14 +953,19 @@ void do_game_logic(void)
 		{
 			if (enemy[i].active == true)
 			{
-				if (enemy[i].state == UnitState::move)
+				if (enemy[i].state == UnitState::move && enemy[i].pos_x < 750)
 					enemy[i].Unit_Move();
 			}
 
 			if (Cat[i].active == true)
 			{
-				if (Cat[i].state == UnitState::move)
+				if (Cat[i].state == UnitState::move && Cat[i].pos_x > 50)
 					Cat[i].Unit_Move();
+
+				if (Cat[i].pos_x < 50)
+				{
+					Cat[i].active = false;
+				}
 			}
 
 		}
@@ -723,7 +1029,7 @@ void render_frame(void)
 		Render_Draw(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, sprite_background);
 
 		//UI¹öÆ°
-		Render_Draw(0, gm->current_game_stage * 120, 800, 120, 0, 480, sprite_ui);
+		Render_Draw(0,120*(gm->current_game_stage - 1), 800, 120 * gm->current_game_stage, 0, 480, sprite_ui);
 
 		//¸ÇÀ§ UI
 		Render_Draw(0, 0, 800, 60, 0, 0, sprite_ui_status);
@@ -956,6 +1262,40 @@ void render_frame(void)
 					break;
 				case UnitState::atk:
 					Render_Draw(80 * (enemy[i].frame / 5), 0, 80 * ((enemy[i].frame / 5) + 1), 60, enemy[i].pos_x, enemy[i].pos_y, sprite_snake_atk);
+					
+					enemy[i].frame++;
+
+					if (enemy[i].frame >= 20)
+					{
+						enemy[i].frame = 0;
+					}
+					break;
+				case UnitState::die:
+					enemy[i].active = false;
+					break;
+
+				}
+
+			} 
+			break;
+		case GameStage::stage2:
+
+			for (int i = 0; i < ENEMY_MAX; i++)
+			{
+				switch (enemy[i].state)
+				{
+				case UnitState::move:
+					Render_Draw(55 * (enemy[i].frame / 5), 0, 55 * ((enemy[i].frame / 5) + 1), 60, enemy[i].pos_x, enemy[i].pos_y, sprite_dog_move);
+
+					enemy[i].frame++;
+
+					if (enemy[i].frame >= 15)
+					{
+						enemy[i].frame = 0;
+					}
+					break;
+				case UnitState::atk:
+					Render_Draw(55 * (enemy[i].frame / 5), 0, 55 * ((enemy[i].frame / 5) + 1), 60, enemy[i].pos_x, enemy[i].pos_y, sprite_dog_atk);
 
 					enemy[i].frame++;
 
@@ -965,16 +1305,185 @@ void render_frame(void)
 					}
 					break;
 				case UnitState::die:
+					enemy[i].active = false;
+					break;
+				}
 
-					
+			}
+			break;
+
+		case GameStage::stage3:
+
+			for (int i = 0; i < ENEMY_MAX; i++)
+			{
+				switch (enemy[i].state)
+				{
+				case UnitState::move:
+					Render_Draw(80 * (enemy[i].frame / 5), 0, 80 * ((enemy[i].frame / 5) + 1), 80, enemy[i].pos_x, enemy[i].pos_y, sprite_usnake_move);
+
+					enemy[i].frame++;
+
+					if (enemy[i].frame >= 20)
+					{
+						enemy[i].frame = 0;
+					}
+					break;
+				case UnitState::atk:
+					Render_Draw(80 * (enemy[i].frame / 5), 0, 80 * ((enemy[i].frame / 5) + 1), 80, enemy[i].pos_x, enemy[i].pos_y, sprite_usnake_atk);
+
+					enemy[i].frame++;
+
+					if (enemy[i].frame >= 20)
+					{
+						enemy[i].frame = 0;
+					}
+					break;
+				case UnitState::die:
+					enemy[i].active = false;
 					break;
 
 				}
 
-			} 
+			}
 			break;
-		case GameStage::stage2:
 
+		case GameStage::stage4:
+
+			for (int i = 0; i < ENEMY_MAX; i++)
+			{
+				switch (enemy[i].state)
+				{
+				case UnitState::move:
+					Render_Draw(65 * (enemy[i].frame / 5), 0, 65 * ((enemy[i].frame / 5) + 1), 80, enemy[i].pos_x, enemy[i].pos_y, sprite_udog_move);
+
+					enemy[i].frame++;
+
+					if (enemy[i].frame >= 15)
+					{
+						enemy[i].frame = 0;
+					}
+					break;
+				case UnitState::atk:
+					Render_Draw(65 * (enemy[i].frame / 5), 0, 65 * ((enemy[i].frame / 5) + 1), 80, enemy[i].pos_x, enemy[i].pos_y, sprite_udog_atk);
+
+					enemy[i].frame++;
+
+					if (enemy[i].frame >= 20)
+					{
+						enemy[i].frame = 0;
+					}
+					break;
+				case UnitState::die:
+					enemy[i].active = false;
+					break;
+
+				}
+
+			}
+			break;
+
+		case GameStage::stage5:
+			for (int i = 0; i < ENEMY_MAX; i++)
+			{
+				switch (enemy[i].state)
+				{
+				case UnitState::move:
+					Render_Draw(100 * (enemy[i].frame / 5), 0, 100 * ((enemy[i].frame / 5) + 1), 150, enemy[i].pos_x, enemy[i].pos_y, sprite_bear_move);
+
+					enemy[i].frame++;
+
+					if (enemy[i].frame >= 30)
+					{
+						enemy[i].frame = 0;
+					}
+					break;
+				case UnitState::atk:
+					Render_Draw(150 * (enemy[i].frame / 5), 0, 150 * ((enemy[i].frame / 5) + 1), 200, enemy[i].pos_x, enemy[i].pos_y, sprite_bear_atk);
+
+					enemy[i].frame++;
+
+					if (enemy[i].frame >= 20)
+					{
+						enemy[i].frame = 0;
+					}
+					break;
+				case UnitState::die:
+					enemy[i].active = false;
+					break;
+
+				}
+
+			}
+			break;
+
+		case GameStage::stage6:
+			for (int i = 0; i < ENEMY_MAX; i++)
+			{
+				switch (enemy[i].state)
+				{
+				case UnitState::move:
+					Render_Draw(100 * (enemy[i].frame / 5), 0, 100 * ((enemy[i].frame / 5) + 1), 100, enemy[i].pos_x, enemy[i].pos_y, sprite_dog_dark_move);
+
+					enemy[i].frame++;
+
+					if (enemy[i].frame >= 15)
+					{
+						enemy[i].frame = 0;
+					}
+					break;
+				case UnitState::atk:
+					Render_Draw(100 * (enemy[i].frame / 5), 0, 100 * ((enemy[i].frame / 5) + 1), 100, enemy[i].pos_x, enemy[i].pos_y, sprite_dog_dark_atk);
+
+					enemy[i].frame++;
+
+					if (enemy[i].frame >= 20)
+					{
+						enemy[i].frame = 0;
+					}
+					break;
+				case UnitState::die:
+					enemy[i].active = false;
+					break;
+
+				}
+
+			}
+
+			break;
+
+		case GameStage::stage7:
+
+			for (int i = 0; i < ENEMY_MAX; i++)
+			{
+				switch (enemy[i].state)
+				{
+				case UnitState::move:
+					Render_Draw(100 * (enemy[i].frame / 5), 0, 100 * ((enemy[i].frame / 5) + 1), 150, enemy[i].pos_x, enemy[i].pos_y, sprite_bear_dark_move);
+
+					enemy[i].frame++;
+
+					if (enemy[i].frame >= 30)
+					{
+						enemy[i].frame = 0;
+					}
+					break;
+				case UnitState::atk:
+					Render_Draw(150 * (enemy[i].frame / 5), 0, 150 * ((enemy[i].frame / 5) + 1), 200, enemy[i].pos_x, enemy[i].pos_y, sprite_bear_dark_atk);
+
+					enemy[i].frame++;
+
+					if (enemy[i].frame >= 20)
+					{
+						enemy[i].frame = 0;
+					}
+					break;
+				case UnitState::die:
+					enemy[i].active = false;
+					break;
+
+				}
+
+			}
 			break;
 		}
 
@@ -1001,6 +1510,7 @@ void cleanD3D(void)
 	d3ddev->Release();
 	d3d->Release();
 
+	//Àâ´ÙÇÑ°Í
 	sprite_start_menu->Release();
 	sprite_end_menu->Release();
 
@@ -1009,10 +1519,18 @@ void cleanD3D(void)
 	sprite_ui->Release();
 	sprite_ui_status->Release();
 
+	//sprite_victory->Release();
+	//sprite_ending->Release();
+	//sprite_start->Release();
+
+
+	//±âÁö
 	sprite_base->Release();
 	sprite_base_attack->Release();
 	sprite_base_shoot->Release();
 
+
+	//¾Æ±ºÀ¯´Ö
 	sprite_cat_basic_atk->Release();
 	sprite_cat_basic_move->Release();
 
@@ -1030,8 +1548,28 @@ void cleanD3D(void)
 	sprite_cat_hero_atk->Release();
 	sprite_cat_hero_move->Release();
 
+	////////////////////Àûµé À¯´Ö
+
 	sprite_snake_atk->Release();
 	sprite_snake_move->Release();
+
+	sprite_usnake_atk->Release();
+	sprite_usnake_move->Release();
+
+	sprite_dog_atk->Release();
+	sprite_dog_move->Release();
+
+	sprite_udog_atk->Release();
+	sprite_udog_move->Release();
+
+	sprite_dog_dark_atk->Release();
+	sprite_dog_dark_atk->Release();
+
+	sprite_bear_atk->Release();
+	sprite_bear_move->Release();
+
+	sprite_bear_dark_atk->Release();
+	sprite_bear_dark_move->Release();
 
 	sound.ReleaseDSound();
 	font->Release();

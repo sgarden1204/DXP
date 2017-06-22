@@ -16,12 +16,21 @@ void GameManager::Render()
 
 void GameManager::Init()
 {
+	victory = false;
+	start = false;
+
+	ready_frame = 0;
+
+	stage_ready = true;
+	stage_start = true;
+	stage_end = false;
+
 	cool_down = 10;
 
 	wait_music = 0;
 	wait_count = 0;
 	wait_energy = 0;
-	current_game_stage = 0;
+	current_game_stage = 1;
 
 
 	unit_count = 0;
