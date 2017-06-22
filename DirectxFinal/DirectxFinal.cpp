@@ -484,8 +484,8 @@ void do_game_logic(void)
 					if (Cat[i].active == false)
 					{
 						Cat[i].active = true;
-						Cat[i].state = UnitState::move;
 						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+240, 500, 5, 1, FriendType::basic);
+						gm->unit_count++;
 						break;
 						//Hp 500, ATK 5, SPD 1
 					}
@@ -506,6 +506,7 @@ void do_game_logic(void)
 					{
 						Cat[i].active = true;
 						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+180, 1500, 3, 1, FriendType::tank);
+						gm->unit_count++;
 						break;
 						//Hp 1500, ATK 3, SPD 1
 					}
@@ -525,6 +526,7 @@ void do_game_logic(void)
 					{
 						Cat[i].active = true;
 						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+220, 1000, 15, 1, FriendType::axe);
+						gm->unit_count++;
 						break;
 						//Hp 10, ATK 15, SPD 1
 					}
@@ -545,6 +547,7 @@ void do_game_logic(void)
 					{
 						Cat[i].active = true;
 						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+220, 10, 1000, 2, FriendType::angle);
+						gm->unit_count++;
 						break;
 						//Hp 10, ATK 500, SPD 2
 					}
@@ -565,6 +568,7 @@ void do_game_logic(void)
 					{
 						Cat[i].active = true;
 						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+200, 1000, 10, 3, FriendType::cow);
+						gm->unit_count++;
 						break;
 						//Hp 1000, ATK 10, SPD 3
 					}
@@ -585,6 +589,7 @@ void do_game_logic(void)
 					{
 						Cat[i].active = true;
 						Cat[i].Unit_Init(CC.Position_x-30, CC.Position_y+200, 1500, 10, 3, FriendType::hero);
+						gm->unit_count++;
 						break;
 						//Hp 20, ATK 10, SPD 2
 					}
@@ -624,11 +629,15 @@ void do_game_logic(void)
 
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
+					gm->unit_enemy_count = 0;
+					enemy[i].pos_x = (rand() % 1000) - 1000;
 					enemy[i].active = false;
 				}
 
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
+					gm->unit_count = 0;
+					Cat[i].pos_x = 900;
 					Cat[i].active = false;
 				}
 			}
@@ -663,11 +672,15 @@ void do_game_logic(void)
 
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
+					gm->unit_enemy_count = 0;
+					enemy[i].pos_x = (rand() % 1000) - 1000;
 					enemy[i].active = false;
 				}
 
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
+					gm->unit_count = 0;
+					Cat[i].pos_x = 900;
 					Cat[i].active = false;
 				}
 			}
@@ -702,11 +715,15 @@ void do_game_logic(void)
 
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
+					gm->unit_enemy_count = 0;
+					enemy[i].pos_x = (rand() % 1000) - 1000;
 					enemy[i].active = false;
 				}
 
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
+					gm->unit_count = 0;
+					Cat[i].pos_x = 900;
 					Cat[i].active = false;
 				}
 			}
@@ -741,11 +758,15 @@ void do_game_logic(void)
 
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
+					gm->unit_enemy_count = 0;
+					enemy[i].pos_x = (rand() % 1000) - 1000;
 					enemy[i].active = false;
 				}
 
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
+					gm->unit_count = 0;
+					Cat[i].pos_x = 900;
 					Cat[i].active = false;
 				}
 			}
@@ -780,11 +801,15 @@ void do_game_logic(void)
 
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
+					gm->unit_enemy_count = 0;
+					enemy[i].pos_x = (rand() % 1000) - 1000;
 					enemy[i].active = false;
 				}
 
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
+					gm->unit_count = 0;
+					Cat[i].pos_x = 900;
 					Cat[i].active = false;
 				}
 			}
@@ -814,16 +839,20 @@ void do_game_logic(void)
 			if (gm->unit_enemy_count <= 0)
 			{
 				game_stage = GameStage::stage7;
-				gm->current_game_stage++;
+				gm->current_game_stage = 6;
 				gm->stage_ready = true;
 
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
+					gm->unit_enemy_count = 0;
+					enemy[i].pos_x = (rand() % 1000) - 1000;
 					enemy[i].active = false;
 				}
 
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
+					gm->unit_count = 0;
+					Cat[i].pos_x = 900;
 					Cat[i].active = false;
 				}
 			}
@@ -853,17 +882,21 @@ void do_game_logic(void)
 			if (gm->unit_enemy_count <= 0)
 			{
 				game_stage = GameStage::stage7;
-				gm->current_game_stage = 7;
+				//gm->current_game_stage = 6; // UI 6°³
 				gm->stage_ready = true;
 
 				for (int i = 0; i < ENEMY_MAX; i++)
 				{
+					gm->unit_enemy_count = 0;
+					enemy[i].pos_x = (rand() % 1000) - 1000;
 					enemy[i].active = false;
 				}
 
 				for (int i = 0; i < FRIEND_MAX; i++)
 				{
+					gm->unit_count = 0;
 					Cat[i].active = false;
+					Cat[i].pos_x = 900;
 				}
 			}
 			break;
@@ -877,7 +910,7 @@ void do_game_logic(void)
 			for (int j = 0; j < ENEMY_MAX; j++)
 			{
 
-					if (Cat[i].pos_x - enemy[j].pos_x <= 80)
+					if (Cat[i].pos_x - enemy[j].pos_x <= 60)
 					{
 						Cat[i].hp -= enemy[j].atk_damage;
 						enemy[j].hp -= Cat[i].atk_damage;
@@ -890,6 +923,9 @@ void do_game_logic(void)
 							Cat[i].active = false;
 							Cat[i].state = UnitState::die;
 							enemy[j].state = UnitState::move;
+							gm->unit_count--;
+							if (gm->unit_count <= 0)
+								gm->unit_count = 0;
 						}
 
 						if (enemy[j].hp <= 0)
@@ -899,6 +935,8 @@ void do_game_logic(void)
 							enemy[j].pos_x = -100;
 							Cat[i].state = UnitState::move;
 							gm->unit_enemy_count--;
+							if (gm->unit_enemy_count <= 0)
+								gm->unit_enemy_count = 0;
 						}
 
 						break;
@@ -914,7 +952,7 @@ void do_game_logic(void)
 			for (int j = 0; j < FRIEND_MAX; j++)
 			{
 
-				if (-enemy[i].pos_x + Cat[j].pos_x <= 80)
+				if (-enemy[i].pos_x + Cat[j].pos_x <= 60)
 				{
 					enemy[i].hp -= Cat[j].atk_damage;
 					Cat[j].hp -= enemy[i].atk_damage;
